@@ -12,13 +12,19 @@ const app = express();
 if (process.env.NODE_ENV === 'development') {
 	app.use(morgan('dev'));
 }
+
 // 转化 apipost传入的json格式数据
 app.use(express.json());
+
 // 设置在浏览器中展示的静态资源
 app.use(express.static(`${__dirname}/public`));
+
 // add timeStamp
 app.use((req, res, next) => {
 	req.requestTime = new Date().toISOString();
+
+	console.log(x) // Express 会在发生错误时 自动的进入 错误处理中间件中  所以production 模式下 控制台输出 " Error hanppened 🤷‍♀ ...."
+
 	next();
 });
 // 匹配对应路由的中间件
@@ -30,7 +36,7 @@ app.use('/api/v1/users', userRouter);
 app.all('*', (req, res, next) => {
 	// 进入all后用next再转入下一个中间件 globalErrorHandler， 顺带这样能传参 给globalErrorHandler 函数初始化 不然也正确 但返回的内容就不太一样了
 	// new AppError(`can't find  ${req.originalUrl}  on this server!`, 404)
-	// next();
+	
 	next(new AppError(`can't find  ${req.originalUrl}  on this server!`, 404));
 });
 

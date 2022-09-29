@@ -59,7 +59,6 @@ const getTour = catchAsync(async (req, res, next) => {
 	const id = req.params.id.trim();
 	const tour = await Tour.findById(id);
 	if (!tour) {
-		// console.log('👉')
 		// return 提前退出函数 并用next进入app中的下一个中间件
 		// 同时return 能避免在转转转 转到 errorController.js 里面 使用res方法返回时 这里又执行 res方法 '会报错 Cannot set headers after they are sent to the client'
 		// 不return会报错 Cannot set headers after they are sent to the client
@@ -77,8 +76,8 @@ const getTour = catchAsync(async (req, res, next) => {
 exports.getTour = getTour;
 
 const createTour = catchAsync(async (req, res, next) => {
-	// console.log('👉');
 	const newTour = await Tour.create(req.body);
+	// console.log(newTour)
 
 	res.status(201).json({
 		status: 'success',

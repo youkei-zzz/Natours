@@ -109,3 +109,22 @@ app.all('*', (req, res, next) => {
 
 ### `Error.captureStack`
 > [CSDN](https://zwkkkk1.blog.csdn.net/article/details/83316772?spm=1001.2101.3001.6650.2&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-83316772-blog-120124102.t0_edu_mix&utm_relevant_index=3)
+
+### ``
+```javascript
+/*  
+
+1.express的路由里抛出异常后，全局中间件没办法捕获，需要在所有的路由函数里写try catch，这坑爹的逻辑让人每次都要多写n行代码  所以单独提取一个catchAsync.js文件 导入其他文件中 使用该方法
+
+2.参照 http://www.qb5200.com/article/360363.html 
+
+*/
+
+// 返回一个匿名函数给 const定义的那个常量，这个返回的函数执行传入catchAsync的函数fn，并调用catch捕获异常
+const catchAsync = fn => {
+	return (req, res, next) => {
+    fn(req, res, next).catch(next);
+  };
+};
+exports.catchAsync = catchAsync;
+```
