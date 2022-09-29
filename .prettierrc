@@ -1,0 +1,8 @@
+{
+  "arrowParens": "avoid",
+  "semi": true,
+  "printWidth": 100,
+  "vueIndentScriptAndStyle": true,
+  "singleQuote": true,
+  "useTabs": true
+}
