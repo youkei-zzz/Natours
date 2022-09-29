@@ -44,7 +44,7 @@ const SendErrorPro = (err, res) => {
 	}
 	// 编程出错或者是 第三方包出错
 	else {
-		console.error('Error hanppened 🤷‍♀ ....');
+		console.error('Error hanppened ⁉️ ....');
 		// 发送信息给客户端
 		res.status(500).json({
 			status: 'error',

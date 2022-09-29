@@ -22,9 +22,7 @@ app.use(express.static(`${__dirname}/public`));
 // add timeStamp
 app.use((req, res, next) => {
 	req.requestTime = new Date().toISOString();
-
-	console.log(x) // Express 会在发生错误时 自动的进入 错误处理中间件中  所以production 模式下 控制台输出 " Error hanppened 🤷‍♀ ...."
-
+	// console.log(x) // Express 会在发生错误时 自动的进入 错误处理中间件中  所以production 模式下 控制台输出 " Error hanppened 🤷‍♀ ...."
 	next();
 });
 // 匹配对应路由的中间件
