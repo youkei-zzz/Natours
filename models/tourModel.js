@@ -82,8 +82,8 @@ tourSchema.pre(/^find/, function (next) {
 });
 
 
-// post(意思是后置 而不是post方法)中间件会在所有钩子方法及pre中间件执行完毕后执行。
-tourSchema.post(/^find/, function (err,doc, next) {
+// post(意思是后置 而不是post方法)中间件会在所有钩子方法及pre中间件执行完毕后执行。 
+tourSchema.post(/^find/, function (doc, next) {
 	console.log(' post(☞后置的意思)中间件 被调用！');
 	console.log(`Query took ${Date.now() - this.start} ms`);
 	next();

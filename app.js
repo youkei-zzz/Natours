@@ -32,9 +32,9 @@ app.use('/api/v1/users', userRouter);
 // 位置要放在最后面 不然都被拦截了
 // 如果之前的路由没匹配上则说明这个 url有问题，all表明无论get post patch.... 只要没进入上面正确的路由那么都会被这个匹配，进入这个处理  所以上面的tourRouter路由里面要写 next()
 app.all('*', (req, res, next) => {
+	console.log('app.all');
 	// 进入all后用next再转入下一个中间件 globalErrorHandler， 顺带这样能传参 给globalErrorHandler 函数初始化 不然也正确 但返回的内容就不太一样了
-	// new AppError(`can't find  ${req.originalUrl}  on this server!`, 404)
-	
+	// 如果next( new AppError(....) ) 那么就直接进入最后一个中间件都不用到这一个中间件了
 	next(new AppError(`can't find  ${req.originalUrl}  on this server!`, 404));
 });
 

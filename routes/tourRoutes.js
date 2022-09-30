@@ -1,4 +1,5 @@
 const express = require('express');
+const { protect, restrictTo } = require('../controllers/authController.js');
 const router = express.Router();
 const {
 	getAllTours,
@@ -19,8 +20,15 @@ const {
 
 router.route('/tour-stats').get(getTourStats);
 router.route('/monthly-plan/:year').get(getMonthlyPlan);
-router.route('/').get(getAllTours).post(createTour);
-router.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
+// 验证用户合法性后再进行下一步
+router.route('/').get(protect, getAllTours).post(createTour);
+
+router
+	.route('/:id')
+	.get(getTour)
+	.patch(updateTour)
+	.delete(protect, restrictTo('admin', 'lead-guide'), deleteTour);
+
 router.route('/top').get(aliasTopTours, getAllTours);
 
 module.exports = router;

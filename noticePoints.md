@@ -90,6 +90,11 @@ tourSchema.pre('aggregate', function (next) {
 */
 
 });
+------------------------
+2.post中间件回调的参数(使用arguments查看
+)
+// 有时候参数不对 会使这个钩子 无法被识别
+// 有三个，默认传入的第一个是查询出来的文档内容，第二个是若有错误的error信息，第三个是next函数
 ```
 
 ### `8. 处理错误路径(app.js中)`
@@ -108,9 +113,11 @@ app.all('*', (req, res, next) => {
 ```
 
 ### `Error.captureStack`
+
 > [CSDN](https://zwkkkk1.blog.csdn.net/article/details/83316772?spm=1001.2101.3001.6650.2&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-83316772-blog-120124102.t0_edu_mix&utm_relevant_index=3)
 
-### ``
+### `9. 关于异步的封装(避免写很多重复的try...catch)`
+
 ```javascript
 /*  
 
@@ -123,8 +130,25 @@ app.all('*', (req, res, next) => {
 // 返回一个匿名函数给 const定义的那个常量，这个返回的函数执行传入catchAsync的函数fn，并调用catch捕获异常
 const catchAsync = fn => {
 	return (req, res, next) => {
-    fn(req, res, next).catch(next);
-  };
+		fn(req, res, next).catch(next);
+	};
 };
 exports.catchAsync = catchAsync;
+```
+
+### `10. 关于MongoDB 中的validate（验证器）何时生效`
+
+```javascript
+//
+	passwordConfirm: {
+		type: String,
+		required: [true, 'Please confirm your password!'],
+		// 不能使用 ()=> 因为 this 无法指向 创建的文档
+		// 这个只在执行 save 或者是 create 操作时有效！！！！！
+		validate: {
+			validator: function (el) {
+				return el === this.password;
+			},
+		},
+	},
 ```
