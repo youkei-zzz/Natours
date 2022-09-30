@@ -178,3 +178,17 @@ const resetPassword = catchAsync(async (req, res, next) => {
 	});
 });
 exports.resetPassword = resetPassword;
+
+const updatePassword = catchAsync(async (req, res, next) => {
+	const user = await User.findById(req.user.id).select('+password');
+	if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+		return next(new AppError('The password you have entered is wrong!', 401));
+	}
+
+	user.password = req.body.password;
+	user.passwordConfirm = req.body.passwordConfirm;
+	// 这次在刷新保存文档时，希望要有验证 所以没有添加参数来关闭验证
+	await user.save();
+	// user.findByIdAndUpdate()  在这里不会起作用 !!!!!! 同样pre('save'，xxx)中间件也不会在findByIdAndUpdate时执行，因此如果用这个就不会有自动在保存文档时增加时间戳和加密功能了
+});
+exports.updatePassword = updatePassword;

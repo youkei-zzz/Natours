@@ -2,6 +2,8 @@
 
 [官方文档](https://mongoing.com/docs/reference/operator/aggregation/group.html)
 
+## 永远不要用 update 的方法更新密码相关的东西
+
 ### `1.query、params、body`
 
 ```javascript

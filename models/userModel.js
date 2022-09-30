@@ -20,14 +20,14 @@ const userSchema = mongoose.Schema({
 		type: String,
 		required: [true, 'A user must have a password!'],
 		minlength: 8,
-		// 字段永远不会出现在输出中
+		// 字段永远不会出现在输出中， 后面可在查询的时候用select("+字段名") 输出
 		select: false,
 	},
 	passwordConfirm: {
 		type: String,
 		required: [true, 'Please confirm your password!'],
 		// 不能使用 ()=> 因为 this 无法指向 创建的文档
-		// 这个只在执行 Save 操作时有效！！！！！
+		// 这个只在执行 save 或者是 create 操作时有效！！！！！ 
 		validate: {
 			validator: function (el) {
 				return el === this.password;
@@ -64,6 +64,7 @@ userSchema.pre('save', function (next) {
 });
 
 // methods 用于此架构上当前定义的方法的对象: (每个文档都能调用 所以要用 普通函数而不用箭头函数)
+
 // 检验用户输入的密码
 userSchema.methods.correctPassword = async function (cadidatePassWord, userPassword) {
 	return await bcrypt.compare(cadidatePassWord, userPassword);
