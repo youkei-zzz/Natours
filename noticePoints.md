@@ -48,12 +48,17 @@ _id : <0 或假>	    指定_id字段的抑制。
 <字段>:<表达式>	    添加新字段或重置现有字段的值。
 ```
 
-### `7. MongoDB中间件`
+### `7. MongoDB中间件 | isModified() 函数`
 
 ```javascript
 // 1. 只能用 function  2. doc指向正在保存的文档内容 ，在.create()和.save()方法之前会被调用
 tourSchema.post("save", function (doc,next) {
 	console.log(doc); // 输出执行post的文档信息
+	if(!this.isModified('')){
+		// .....
+		// isModified() : 如果文档被改了返回true 否则为false 
+		//  isModified('xxx') 如果给出指定的字段 则会检查给定字段的或者是包含这个字段的全路径是否被改变 改变了返回true 否则返回false
+	}
 	next();
 });
 --------------------------------------------------------------
@@ -112,11 +117,11 @@ app.all('*', (req, res, next) => {
 });
 ```
 
-### `Error.captureStack`
+### `9. Error.captureStack() 大概意思`   **[CSDN](https://zwkkkk1.blog.csdn.net/article/details/83316772?spm=1001.2101.3001.6650.2&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-83316772-blog-120124102.t0_edu_mix&utm_relevant_index=3)** 
 
-> [CSDN](https://zwkkkk1.blog.csdn.net/article/details/83316772?spm=1001.2101.3001.6650.2&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-83316772-blog-120124102.t0_edu_mix&utm_relevant_index=3)
+<br>
 
-### `9. 关于异步的封装(避免写很多重复的try...catch)`
+### `10. 关于异步的封装(避免写很多重复的try...catch)`
 
 ```javascript
 /*  
@@ -136,7 +141,7 @@ const catchAsync = fn => {
 exports.catchAsync = catchAsync;
 ```
 
-### `10. 关于MongoDB 中的validate（验证器）何时生效`
+### `11. 关于MongoDB 中的validate（验证器）何时生效`
 
 ```javascript
 //
@@ -151,4 +156,32 @@ exports.catchAsync = catchAsync;
 			},
 		},
 	},
+```
+
+### `12. Node内置的 promisify`
+
+```javascript
+// 导入方法
+const { promisify } = require('util');
+// Node.js 内置的 util 模块有一个 promisify() 方法，该方法将基于回调的函数转换为基于 Promise 的函数。这使您可以将 Promise 链和 async/await 与基于回调的 API 结合使用。
+
+// 例如 :
+const fs = require('fs')
+const util = require('util')
+​
+// 将 fs.readFile() 转换为一个接受相同参数但返回 Promise 的函数。
+const readFile = util.promisify(fs.readFile)
+​
+// 现在可以将 readFile() 与 await 一起使用！
+const buf = await readFile('./package.json')
+​
+const obj = JSON.parse(buf.toString('utf8'))
+console.log(obj.name) // 'Example'
+```
+### `12. crypto 的大概用法` **[crypto(简书) ](https://www.jianshu.com/p/f94a6c8cafaa)**   **注意：还有一个第三方包 bcrypt**
+```javascript
+const resetToken = crypto.randomBytes(32).toString('hex');
+	// resetToken 得出随机的一个字符串  createHash指出要用什么加密算法  update 的参数是需要加密的数据。 update() 可以多次被调用，多次调用只是简单的把要加密的结果拼接起来。digest指明用什么形式输出这个字符串
+	this.passwordResetTOKEN = crypto.createHash('sha256').update(resetToken).digest('hex');
+
 ```

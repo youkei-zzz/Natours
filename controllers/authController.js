@@ -3,6 +3,8 @@ const { catchAsync } = require('../utils/catchAsync.js');
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
 const AppError = require('../utils/appError.js');
+const sendEmail = require('../utils/email.js');
+const crypto = require('crypto');
 
 const signToken = id => {
 	return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -101,3 +103,78 @@ const restrictTo = (...roles) => {
 	};
 };
 exports.restrictTo = restrictTo;
+
+const forgotPassword = catchAsync(async (req, res, next) => {
+	// 1.通过邮件中的邮箱中获取用户
+	const user = await User.findOne({ email: req.body.email });
+	if (!user) {
+		return next(new AppError('There is no user with email address', 404));
+	}
+
+	// 2.生成随机的重置token 保存到文档上 并返回这个token过来
+	const resetToken = user.createPasswordResetToken();
+	// 上一步执行完了以后往往所有文档里增添了一个字段 但是还未保存 这里就执行一下保存使文档数据更新 ，但是不需要在执行 save的时候验证字段(目的只是为了保存)
+	await user.save({ validateBeforeSave: false });
+	// await user.save();
+
+	// 3. 发送生成的token给用户
+	const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
+	const message = `Forgot Password? Just submit a patch request with yourr password and passConfirm to: ${resetURL}.\nIf you did't forgot please ignore this email!`;
+
+	try {
+		await sendEmail({
+			email: user.email,
+			subject: 'Your password reset token (valid for 10 minutes!)',
+			message,
+		});
+		res.status(200).json({
+			status: 'success',
+			message: 'Token send to email!',
+		});
+	} catch (error) {
+		// 把查询的文档中的两个字段重置 并执行保存
+		user.passwordResetToken = undefined;
+		user.passwordExpires = undefined;
+		await user.save({ validateBeforeSave: false });
+
+		return next(new AppError('Errors hanppen while sending email, Try again later!', 500));
+	}
+});
+exports.forgotPassword = forgotPassword;
+
+const resetPassword = catchAsync(async (req, res, next) => {
+	// 1.url中的参数拿来生成token 再加密后与原来比较
+	const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+	// 2.查询用户
+	const user = await User.findOne({
+		// token一样
+		passwordResetToken: hashedToken,
+		// token一样还不够 还要保证过期的时间是在将来
+		passwordResetExpires: { $gt: Date.now() },
+	});
+
+	// 查不到
+	if (!user) {
+		return next(new AppError('This token is invalid or expired!', 400));
+	}
+
+	user.password = req.body.password;
+	user.passwordConfirm = req.body.passwordConfirm;
+	// 重置为undefined的值在MongoDB中是不出现的 所以又把它们从库中删去了 等到有一天有忘记密码时 调用userModel.js中的createPasswordResetToken再临时创建
+	user.passwordResetToken = undefined;
+	user.passwordResetExpires = undefined;
+	// 执行保存MongoDB数据库
+	await user.save();
+
+	// 3.更新 用户的changedPasswordAfter
+	// 4.重新发送新的token
+	console.log('看看user里面有没有_id:');
+	const token = signToken(user._id);
+
+	res.status(200).json({
+		status: 'success',
+		token,
+	});
+});
+exports.resetPassword = resetPassword;

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 const userSchema = mongoose.Schema({
 	name: { type: String, required: [true, 'Please tell us your name!'] },
@@ -35,9 +36,13 @@ const userSchema = mongoose.Schema({
 		},
 	},
 	passwordChangedAt: Date,
+	passwordResetToken: String,
+	passwordResetExpires: Date,
 });
 
-// 使用中间件加密密码
+// 使用中间件:
+
+// 改密码时 加密密码
 userSchema.pre('save', async function (next) {
 	// 密码没有改变 则不需要处理 仅当密码已被修改（或为新密码）时才对密码进行哈希处理
 	if (!this.isModified('password')) return next();
@@ -48,9 +53,17 @@ userSchema.pre('save', async function (next) {
 	this.passwordConfirm = undefined;
 	next();
 });
+// 改密码时 设置 passwordChangedAt 字段
+userSchema.pre('save', function (next) {
+	// 如果是新创建的文档 或者是密码没有改变 就不需要设置字段 passwordChangedAfter了
+	if (!this.isModified('password') || this.isNew) return next();
 
-// methods用于此架构上当前定义的方法的对象(每个文档都能调用)
+	// 有个问题 有时候 这里获取的时间会比 token签发的时间迟 导致了好像是用户改了密码一样的错误从而使用户不能登录  这里为了避免这种情况 就 减去1秒(1000ms) 消除一下BUG
+	this.passwordChangedAt = Date.now() - 1000;
+	next();
+});
 
+// methods 用于此架构上当前定义的方法的对象: (每个文档都能调用 所以要用 普通函数而不用箭头函数)
 // 检验用户输入的密码
 userSchema.methods.correctPassword = async function (cadidatePassWord, userPassword) {
 	return await bcrypt.compare(cadidatePassWord, userPassword);
@@ -66,6 +79,18 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
 	}
 	// false 表示没有改变密码
 	return false;
+};
+
+userSchema.methods.createPasswordResetToken = function () {
+	const resetToken = crypto.randomBytes(32).toString('hex');
+	// resetToken 得出随机的一个字符串  createHash指出要用什么加密算法  update 的参数是需要加密的数据。 update() 可以多次被调用，多次调用只是简单的把要加密的结果拼接起来。digest指明用什么形式输出这个字符串
+	this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+	// 设置文档token的过期时间的字段(单位 ms) 过了这个时间就不允许进入注册  这里设置 10分钟
+	this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+	// console.log(resetToken)
+	// console.log(this.passwordResetToken); // 数据库里面储存的token
+	return resetToken; //  用户拿到的token
 };
 
 const User = mongoose.model('User', userSchema);

@@ -89,8 +89,8 @@ const createTour = catchAsync(async (req, res, next) => {
 exports.createTour = createTour;
 
 const updateTour = catchAsync(async (req, res, next) => {
-	console.log(req.params);
-	console.log(req.body);
+	// console.log(req.params);
+	// console.log(req.body);
 
 	const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
 		new: true,
