@@ -154,7 +154,11 @@ const forgotPassword = catchAsync(async (req, res, next) => {
 exports.forgotPassword = forgotPassword;
 
 const resetPassword = catchAsync(async (req, res, next) => {
-	// 1.把通过邮件发送的url中的参数拿来生成token 再加密后与原来比较
+	// 1.把通过邮件发送的url中的参数拿来生成token 再加密后与原来比较 (以下是邮箱大致的格式)
+	/* 
+			Forgot Password? Just submit a patch request with yourr password and passConfirm to: http://127.0.0.1:3000/api/v1/users/resetPassword/84437bd0fbc25c1896d3002a6dd1e16268a192e7167fcb8a29981e23adb8a570.
+			If you did't forgot please ignore this email!
+	*/
 	const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
 
 	// 2.查询用户
