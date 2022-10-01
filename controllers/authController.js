@@ -11,6 +11,29 @@ const signToken = id => {
 		expiresIn: process.env.JWT_EXPIRES_IN,
 	});
 };
+const createSendToken = (user, statusCode, res) => {
+	const token = signToken(user._id);
+	const cookieOptions = {
+		expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+		httpOnly: true,
+	};
+	if (process.env.NODE_ENV === 'production') {
+		cookieOptions.secure = true;
+	}
+
+	res.cookie('jwt', token, cookieOptions);
+
+	// 从输出中删除密码
+	user.password = undefined;
+
+	res.status(statusCode).json({
+		status: 'success',
+		token,
+		data: {
+			user,
+		},
+	});
+};
 
 const signup = catchAsync(async (req, res, next) => {
 	// 防止一个漏洞：只选择我们需要的数据 而不是把用户输入的所有数据一起创建文档
@@ -23,15 +46,7 @@ const signup = catchAsync(async (req, res, next) => {
 		role: req.body.role,
 	});
 
-	const token = signToken(newUser._id);
-
-	res.status(201).json({
-		status: 'success',
-		token,
-		data: {
-			user: newUser,
-		},
-	});
+	createSendToken(newUser, 201, res);
 });
 exports.signup = signup;
 
@@ -52,11 +67,7 @@ const login = catchAsync(async (req, res, next) => {
 	}
 
 	// 3.都满足 发送token到客户端
-	const token = signToken(user._id);
-	res.status(200).json({
-		status: 'success',
-		token,
-	});
+	createSendToken(user, 200, res);
 });
 exports.login = login;
 
@@ -169,11 +180,12 @@ const resetPassword = catchAsync(async (req, res, next) => {
 
 	// 3.更新 用户的changedPasswordAfter
 	// 4.重新发送新的token
-	const token = signToken(user._id);
-	res.status(200).json({
-		status: 'success',
-		token,
-	});
+	// const token = signToken(user._id);
+	// res.status(200).json({
+	// 	status: 'success',
+	// 	token,
+	// });
+	createSendToken(user, 200, res);
 });
 exports.resetPassword = resetPassword;
 
@@ -190,11 +202,12 @@ const updatePassword = catchAsync(async (req, res, next) => {
 	// user.findByIdAndUpdate()  在这里不会起作用 !!!!!! 同样pre('save'，xxx)中间件也不会在findByIdAndUpdate时执行，因此如果用这个就不会有自动在保存文档时增加时间戳和加密功能了
 
 	// 把从数据库中获取到的id转换成token发送给用户
-	const token = signToken(user._id);
-	res.status(200).json({
-		status: 'success',
-		token,
-	});
+	// const token = signToken(user._id);
+	// res.status(200).json({
+	// 	status: 'success',
+	// 	token,
+	// });
+	createSendToken(user, 200, res);
 });
 exports.updatePassword = updatePassword;
 

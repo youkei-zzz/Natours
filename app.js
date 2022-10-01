@@ -1,20 +1,59 @@
 const express = require('express');
-const morgan = require('morgan');
+const morgan = require('morgan'); // 用于在开发环境下输出一些信息
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController.js');
+const rateLimit = require('express-rate-limit'); // 防过多次数来自同一IP的请求 也许是攻击
+const helmet = require('helmet'); // 增加安全的HTTP Headers
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 
 const app = express();
 
-// 中间件 执行顺序和位置有关  全局生效 即 所有请求都会经过
+// 全局生效中间件 执行顺序和位置有关  全局生效 即 所有请求都会经过 :
+
 if (process.env.NODE_ENV === 'development') {
 	app.use(morgan('dev'));
 }
 
-// 转化 apipost传入的json格式数据
-app.use(express.json());
+// 用来设置一些安全的 HTTP Headers  所以应该把它放在最上面的位置 而不是放在后面 甚至是最下面
+app.use(helmet()); // helmet() 返回另一个函数 等在这里 直到到达这个全局中间件后被调用
+
+// 一小时内同一个IP请求超过一百次就不通过 。 max 应该依据程序填写而不是随意
+const limiter = rateLimit({
+	max: 100,
+	windowMs: 60 * 60 * 1000,
+	message: 'We have received too many requests from this IP, try again one hour later!',
+});
+app.use('/api', limiter); // 给所有的api接口都使用
+
+//Body parser, 从 body数据中读取json数据转换为 req.body。 json()中可以传配置项
+// limit: 控制最大请求正文大小。如果这是一个数字，则该值指定字节数;如果是字符串，则该值将传递到字节库进行解析。默认值为“100kb
+//  配置项有：inflate limit type verify
+app.use(express.json({ limit: '10kb' }));
+
+// 通过中间件 针对非SQL查询注入的数据进行清理  ( 例如使用: "email": {"$gt": "" }, password:pass1234  一样的可以登录)
+app.use(mongoSanitize());
+
+// duixss攻击 数据进行清理   (例如: 注册用户时写成  "name": "<div id='badCode'>Name</div>" )
+app.use(xss());
+
+// 防止参数污染  注意 有时候要查询同一个参数但有多个条件的时候 也会被过滤掉参数 所以 我们 可以进入hpp中 去把一些参数加入 "白名单" !!!
+app.use(
+	hpp({
+		whitelist: [
+			'duration',
+			'ratingsQuantity',
+			'ratingsAverage',
+			'maxGroupSize',
+			'difficulty',
+			'price',
+		],
+	})
+);
 
 // 设置在浏览器中展示的静态资源
 app.use(express.static(`${__dirname}/public`));
@@ -22,7 +61,7 @@ app.use(express.static(`${__dirname}/public`));
 // add timeStamp
 app.use((req, res, next) => {
 	req.requestTime = new Date().toISOString();
-	// console.log(x) // Express 会在发生错误时 自动的进入 错误处理中间件中  所以production 模式下 控制台输出 " Error hanppened 🤷‍♀ ...."
+	// console.log(x) // Express 会在发生错误时 自动的进入 错误处理中间件中  所以production 模式下 控制台输出 " The error ' xxxx ' hanppened ⁉️ ....."
 	next();
 });
 // 匹配对应路由的中间件

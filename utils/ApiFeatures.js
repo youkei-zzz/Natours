@@ -21,6 +21,7 @@ class APIFeatures {
 	sort() {
 		if (this.queryString.sort) {
 			// query里面的sort用逗号分割开来，如果要按多条件排序,先去逗号 再转换成以空格隔开的字符串
+			// console.log(this.queryString.sort) 参数污染时(例如路径是 xxxx/tours?sort=duration&sort=price  ) queryString  是 [ 'duration', 'price' ]数组  没有split方法,所以会报错 导致程序崩溃
 			const sortBy = this.queryString.sort.split(',').join(' ');
 			this.query = this.query.sort(sortBy); // 指定this.query里面的sort值作为MongoDB的排序依据,类型是string 多个值用空格隔开
 		} else {

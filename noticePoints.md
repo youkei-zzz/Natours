@@ -190,5 +190,47 @@ console.log(obj.name) // 'Example'
 const resetToken = crypto.randomBytes(32).toString('hex');
 	// resetToken 得出随机的一个字符串  createHash指出要用什么加密算法  update 的参数是需要加密的数据。 update() 可以多次被调用，多次调用只是简单的把要加密的结果拼接起来。digest指明用什么形式输出这个字符串
 	this.passwordResetTOKEN = crypto.createHash('sha256').update(resetToken).digest('hex');
+```
+### `13. res.cookie(name, value, [options])`
+```javascript
+// Expires – 过期时间。指定cookie的生命期。具体是值是过期日期。如果想让cookie的存在期限超过当前浏览器会话时间，就必须使用这个属性。当过了到期日期时，浏览器就可以删除cookie文件，没有任何影响。
+
+// Path – 路径。指定与cookie关联的WEB页。值可以是一个目录，或者是一个路径。如果/head/index.html 建立了一个cookie，那么在/head/目录里的所有页面，以及该目录下面任何子目录里的页面都可以访问这个cookie。这就是说，在/head/stories/articles 里的任何页面都可以访问/head/index.html建立的cookie。但是，如果/zdnn/ 需要访问/head/index.html设置的cookes，该怎么办?这时，我们要把cookies的path属性设置成“/”。在指定路径的时候，凡是来自同一服务器，URL里有相同路径的所有WEB页面都可以共享cookies。现在看另一个例子：如果想让 /head/filters/ 和/head/stories/共享cookies，就要把path设成“/head”。
+
+// Domain – 域。指定关联的WEB服务器或域。值是域名，比如goaler.com。这是对path路径属性的一个延伸。如果我们想让dev.mycompany.com 能够访问bbs.mycompany.com设置的cookies，该怎么办? 我们可以把domain属性设置成“mycompany.com”，并把path属性设置成“/”。FYI：不能把cookies域属性设置成与设置它的服务器的所在域不同的值。
+
+// Secure – 安全。指定cookie的值通过网络如何在用户和WEB服务器之间传递。这个属性的值或者是“secure”，或者为空。缺省情况下，该属性为空，也就是使用不安全的HTTP连接传递数据。如果一个 cookie 标记为secure，那么，它与WEB服务器之间就通过HTTPS或者其它安全协议传递数据。不过，设置了secure属性不代表其他人不能看到你机器本地保存的cookie。换句话说，把cookie设置为secure，只保证cookie与WEB服务器之间的数据传输过程加密，而保存在本地的cookie文件并不加密。如果想让本地cookie也加密，得自己加密数据。
+
 
 ```
+<br>
+
+> 设置cookie name 值为value, 接受字符串参数或者JSON对象。 path 属性默认为 "/".
+
+```javascript
+ res.cookie('name', 'tobi', { domain: '.example.com', path: '/admin', secure: true });
+
+ res.cookie('rememberme', '1', { expires: new Date(Date.now() + 900000), httpOnly: true });
+```
+
+------------
+
+>maxAge 属性是一个便利的设置"expires",它是一个从当前时间算起的毫秒。 下面的代码和上一个例子中的第二行是同样的作用。
+
+```javascript
+res.cookie('rememberme', '1', { maxAge: 900000, httpOnly: true })
+```
+-----------
+>可以传一个序列化的JSON对象作为参数， 它会自动被bodyParser() 中间件解析。
+
+```javascript
+res.cookie('cart', { items: [1,2,3] });
+res.cookie('cart', { items: [1,2,3] }, { maxAge: 900000 });
+```
+--------------
+>这个方法也支持签名的cookies。 只需要简单的传递signed 参数。 res.cookie() 会使用通过 express.cookieParser(secret) 传 入的secret来签名这个值
+
+```javascript
+res.cookie('name', 'tobi', { signed: true });
+```
+**稍后你就可以通过req.signedCookie 对象访问到这个值。**
