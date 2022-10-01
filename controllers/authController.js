@@ -70,7 +70,7 @@ const protect = catchAsync(async (req, res, next) => {
 	if (!token)
 		return next(new AppError('You are not logged in! Please long in to get access.', 401));
 
-	// 2.验证令牌
+	// 2.验证令牌 (promisfy 将一个函数转化成异步的函数并以可使用then)
 	const decode = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 	// console.log(decode) //{ id: '6336311330b1f942148af428', iat: 1664499558, exp: 1672275558 }
 
@@ -169,9 +169,7 @@ const resetPassword = catchAsync(async (req, res, next) => {
 
 	// 3.更新 用户的changedPasswordAfter
 	// 4.重新发送新的token
-	console.log('看看user里面有没有_id:');
-	const token = signToken(user._id);
-
+	const token = signToken(user._id)
 	res.status(200).json({
 		status: 'success',
 		token,
@@ -190,5 +188,12 @@ const updatePassword = catchAsync(async (req, res, next) => {
 	// 这次在刷新保存文档时，希望要有验证 所以没有添加参数来关闭验证
 	await user.save();
 	// user.findByIdAndUpdate()  在这里不会起作用 !!!!!! 同样pre('save'，xxx)中间件也不会在findByIdAndUpdate时执行，因此如果用这个就不会有自动在保存文档时增加时间戳和加密功能了
+
+	// 把从数据库中获取到的id转换成token发送给用户 
+	const token = signToken(user._id);
+	res.status(200).json({
+		status: 'success',
+		token,
+	});
 });
 exports.updatePassword = updatePassword;
