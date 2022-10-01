@@ -27,7 +27,7 @@ const userSchema = mongoose.Schema({
 		type: String,
 		required: [true, 'Please confirm your password!'],
 		// 不能使用 ()=> 因为 this 无法指向 创建的文档
-		// 这个只在执行 save 或者是 create 操作时有效！！！！！ 
+		// 这个只在执行 save 或者是 create 操作时有效！！！！！
 		validate: {
 			validator: function (el) {
 				return el === this.password;
@@ -38,6 +38,11 @@ const userSchema = mongoose.Schema({
 	passwordChangedAt: Date,
 	passwordResetToken: String,
 	passwordResetExpires: Date,
+	active: {
+		type: Boolean,
+		default: true,
+		select:false
+	},
 });
 
 // 使用中间件:
@@ -62,6 +67,12 @@ userSchema.pre('save', function (next) {
 	this.passwordChangedAt = Date.now() - 1000;
 	next();
 });
+// 每次自动查询的时候 都查询那些没有被标记为已删除的用户
+userSchema.pre(/^find/, function(next) {
+  this.find({ active: { $ne: false } });
+  next();
+});
+
 
 // methods 用于此架构上当前定义的方法的对象: (每个文档都能调用 所以要用 普通函数而不用箭头函数)
 

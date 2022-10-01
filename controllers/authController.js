@@ -169,7 +169,7 @@ const resetPassword = catchAsync(async (req, res, next) => {
 
 	// 3.更新 用户的changedPasswordAfter
 	// 4.重新发送新的token
-	const token = signToken(user._id)
+	const token = signToken(user._id);
 	res.status(200).json({
 		status: 'success',
 		token,
@@ -189,7 +189,7 @@ const updatePassword = catchAsync(async (req, res, next) => {
 	await user.save();
 	// user.findByIdAndUpdate()  在这里不会起作用 !!!!!! 同样pre('save'，xxx)中间件也不会在findByIdAndUpdate时执行，因此如果用这个就不会有自动在保存文档时增加时间戳和加密功能了
 
-	// 把从数据库中获取到的id转换成token发送给用户 
+	// 把从数据库中获取到的id转换成token发送给用户
 	const token = signToken(user._id);
 	res.status(200).json({
 		status: 'success',
@@ -197,3 +197,13 @@ const updatePassword = catchAsync(async (req, res, next) => {
 	});
 });
 exports.updatePassword = updatePassword;
+
+const deleteMe = catchAsync(async (req, res, next) => {
+	await User.findByIdAndUpdate(req.user.id, { active: false });
+
+	res.status(204).json({
+		status: 'success',
+		data: null,
+	});
+});
+exports.deleteMe = deleteMe;

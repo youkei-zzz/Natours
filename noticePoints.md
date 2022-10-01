@@ -1,9 +1,9 @@
 ### **Mongoing 文档**
 
-[官方文档](https://mongoing.com/docs/reference/operator/aggregation/group.html)
+ # 🌟 [官方文档](https://mongoing.com/docs/reference/operator/aggregation/group.html)
 
-## 永远不要用 update 的方法更新密码相关的东西
-
+### `0. 永远不要用 update 的方法更新密码相关的东西`
+>  **[绕过中间件的情况](https://mongoosejs.com/docs/middleware.html)**
 ### `1.query、params、body`
 
 ```javascript
@@ -37,7 +37,7 @@ const tours = await query;
 
 ### `5. module.exports与exports.xxx`
 
-> [CSDN](https://blog.csdn.net/interestANd/article/details/119058481)
+> ## 👉 **[CSDN](https://blog.csdn.net/interestANd/article/details/119058481)**
 
 ### `6. $project`
 
@@ -50,7 +50,9 @@ _id : <0 或假>	    指定_id字段的抑制。
 <字段>:<表达式>	    添加新字段或重置现有字段的值。
 ```
 
-### `7. MongoDB中间件 | isModified() 函数`
+### `7. MongoDB中间件 | isModified() 函数` 
+> ### 👉 **[Mongoose官方文档](https://mongoosejs.com/docs/middleware.html)**
+> ### 👉 **[CSDN](https://blog.csdn.net/caseywei/article/details/109524964)**
 
 ```javascript
 // 1. 只能用 function  2. doc指向正在保存的文档内容 ，在.create()和.save()方法之前会被调用
@@ -119,7 +121,8 @@ app.all('*', (req, res, next) => {
 });
 ```
 
-### `9. Error.captureStack() 大概意思`   **[CSDN](https://zwkkkk1.blog.csdn.net/article/details/83316772?spm=1001.2101.3001.6650.2&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-83316772-blog-120124102.t0_edu_mix&utm_relevant_index=3)** 
+### `9. Error.captureStack() 大概意思`  
+>## 👉 **[CSDN](https://zwkkkk1.blog.csdn.net/article/details/83316772?spm=1001.2101.3001.6650.2&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-83316772-blog-120124102.t0_edu_mix&utm_relevant_index=3)** 
 
 <br>
 
@@ -180,7 +183,9 @@ const buf = await readFile('./package.json')
 const obj = JSON.parse(buf.toString('utf8'))
 console.log(obj.name) // 'Example'
 ```
-### `12. crypto 的大概用法` **[crypto(简书) ](https://www.jianshu.com/p/f94a6c8cafaa)**   **注意：还有一个第三方包 bcrypt**
+### `12. crypto 的大概用法` 
+>## 👉  **[crypto(简书) ](https://www.jianshu.com/p/f94a6c8cafaa)**  
+> **注意：还有一个第三方包 bcrypt**
 ```javascript
 const resetToken = crypto.randomBytes(32).toString('hex');
 	// resetToken 得出随机的一个字符串  createHash指出要用什么加密算法  update 的参数是需要加密的数据。 update() 可以多次被调用，多次调用只是简单的把要加密的结果拼接起来。digest指明用什么形式输出这个字符串

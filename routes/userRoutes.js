@@ -6,6 +6,7 @@ const {
 	resetPassword,
 	protect,
 	updatePassword,
+	deleteMe,
 } = require('../controllers/authController.js');
 const {
 	getAllUser,
@@ -20,6 +21,7 @@ const router = express.Router();
 router.post('/forgotPassword', forgotPassword);
 router.patch('/resetPassword/:token', resetPassword);
 router.patch('/updateMe', protect, updateMe);
+router.delete('/deleteMe', protect, deleteMe);
 
 router.post('/signup', signup);
 router.post('/login', login);
