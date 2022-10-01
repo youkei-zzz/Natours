@@ -10,6 +10,7 @@ const hpp = require('hpp');
 
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
+const reviewRouter = require('./routes/reviewRoutes.js');
 
 const app = express();
 
@@ -67,6 +68,7 @@ app.use((req, res, next) => {
 // 匹配对应路由的中间件
 app.use('/api/v1/tours', tourRouter); // 如果路径匹配但中途出错或者是什么情况 要有next()跳出这个中间件 进入下一个 ，下一个因为路径是user匹配不上 所以进入all('*') 里面
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews',reviewRouter)
 
 // 位置要放在最后面 不然都被拦截了
 // 如果之前的路由没匹配上则说明这个 url有问题，all表明无论get post patch.... 只要没进入上面正确的路由那么都会被这个匹配，进入这个处理  所以上面的tourRouter路由里面要写 next()

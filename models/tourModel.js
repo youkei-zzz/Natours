@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+// const User = require('./userModel.js');
 
 const tourSchema = new mongoose.Schema(
 	{
@@ -50,6 +51,32 @@ const tourSchema = new mongoose.Schema(
 		createdAt: { type: Date, default: Date.now() },
 		startDates: [Date],
 		secretTour: { type: Boolean, default: false },
+		//嵌入文档
+		startLocation: {
+			// GeoJSON  与地理位置有关的JSON格式
+			type: {
+				type: String,
+				default: 'Point',
+				enum: ['Point'],
+			},
+			coordinates: [Number],
+			address: String,
+			description: String,
+		},
+		locations: [
+			{
+				type: {
+					type: String,
+					default: 'Point',
+					enum: ['Point'],
+				},
+				coordinates: [Number],
+				address: String,
+				description: String,
+				day: Number,
+			},
+		],
+		guides: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
 	},
 	{
 		toJSON: { virtuals: true },
@@ -61,11 +88,18 @@ tourSchema.virtual('durationWeeks').get(function () {
 	return this.duration / 7;
 });
 
-// MongoDB自带 中间件
+// MongoDB 中间件 :
+
+// 在schema中指定一个guides数组 填写的时候把ID写在body里面，通过  手动  的查询并赋值给guides ， 但是 我们还可以用 另外一个类型来实现自动的嵌入文档
+// tourSchema.pre('save', async function (next) {
+// 	// 创建的时候 body.guides里面填的是id
+// 	const guidesPromise = this.guides.map(async id => User.findById(id));
+// 	this.guides = await Promise.all(guidesPromise);
+// });
 
 tourSchema.pre('save', function (next) {
 	// this 指向当前的需要被保存进MongoDB的文档
-	console.log("create 方法被调用！")
+	console.log('create 方法被调用！');
 	this.slug = slugify(this.name, { lower: true });
 	next();
 });
@@ -81,24 +115,25 @@ tourSchema.pre(/^find/, function (next) {
 	next();
 });
 
-
-// post(意思是后置 而不是post方法)中间件会在所有钩子方法及pre中间件执行完毕后执行。 
+// post(意思是后置 而不是post方法)中间件会在所有钩子方法及pre中间件执行完毕后执行。
 tourSchema.post(/^find/, function (doc, next) {
 	console.log(' post(☞后置的意思)中间件 被调用！');
 	console.log(`Query took ${Date.now() - this.start} ms`);
 	next();
 });
 
+tourSchema.pre(/^find/, function (next) {
+	this.populate({ path: 'guides', select: '-__v -passwordChangedAt' });
+	next()
+});
 
 // Aggregation MiddleWare
 tourSchema.pre('aggregate', function (next) {
 	// 指向当前的aggregate
-	console.log('aggregate 中间件被调用')
+	console.log('aggregate 中间件被调用');
 	this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
 	next();
 });
 
-
 const Tour = mongoose.model('Tour', tourSchema);
 exports.Tour = Tour;
-

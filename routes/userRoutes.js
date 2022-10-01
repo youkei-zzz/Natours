@@ -16,6 +16,7 @@ const {
 	deleteUser,
 	updateMe,
 } = require('../controllers/userController.js');
+
 const router = express.Router();
 
 router.post('/forgotPassword', forgotPassword);

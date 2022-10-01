@@ -13,7 +13,7 @@ const sendEmail = async options => {
 
 	// 2.定义邮件的 options
 	const mailOptions = {
-		from: "kekei's test mail <user@gmail.com>",
+		from: "Natour website mail <user@gmail.com>",
 		to: options.email,
 		subject: options.subject,
 		text: options.message,

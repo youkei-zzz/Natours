@@ -57,6 +57,7 @@ exports.getAllTours = getAllTours;
 
 const getTour = catchAsync(async (req, res, next) => {
 	const id = req.params.id.trim();
+	// 在查询时用  populate() （可以加入配置项）把字段中 guides字段填充（本质上 populate仍然会创建一个查询 如果程序很小倒无所谓） , 创建时 仍然是 ObjectId的类型,这里为了简化 就放在tourModel.js 里面的pre查询中间件里面
 	const tour = await Tour.findById(id);
 	if (!tour) {
 		// return 提前退出函数 并用next进入app中的下一个中间件
@@ -77,7 +78,6 @@ exports.getTour = getTour;
 
 const createTour = catchAsync(async (req, res, next) => {
 	const newTour = await Tour.create(req.body);
-	// console.log(newTour)
 
 	res.status(201).json({
 		status: 'success',
@@ -89,9 +89,6 @@ const createTour = catchAsync(async (req, res, next) => {
 exports.createTour = createTour;
 
 const updateTour = catchAsync(async (req, res, next) => {
-	// console.log(req.params);
-	// console.log(req.body);
-
 	const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
 		new: true,
 		runValidators: true,
@@ -114,8 +111,7 @@ const updateTour = catchAsync(async (req, res, next) => {
 exports.updateTour = updateTour;
 
 const deleteTour = catchAsync(async (req, res, next) => {
-	const tour = await Tour.findOneAndDelete(req.params.id);
-
+	const tour = await Tour.findByIdAndDelete(req.params.id);
 	if (!tour) {
 		// return 提前退出函数 并用next进入app中的下一个中间件
 		// 同时return 能避免在转转转 转到 errorController.js 里面 使用res方法返回时 这里又执行 res方法 '会报错 Cannot set headers after they are sent to the client'

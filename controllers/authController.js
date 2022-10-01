@@ -143,7 +143,7 @@ const forgotPassword = catchAsync(async (req, res, next) => {
 			message: 'Token send to email!',
 		});
 	} catch (error) {
-		// 把查询的文档中的两个字段重置 并执行保存
+		//发送邮件出错了，那么保存这两个属性也没必要，本来这两个属性就是用来重置密码时验证用的，因此把查询的文档中的两个字段重置为undefined不让这两个字段显示 并执行保存
 		user.passwordResetToken = undefined;
 		user.passwordExpires = undefined;
 		await user.save({ validateBeforeSave: false });
@@ -154,7 +154,7 @@ const forgotPassword = catchAsync(async (req, res, next) => {
 exports.forgotPassword = forgotPassword;
 
 const resetPassword = catchAsync(async (req, res, next) => {
-	// 1.url中的参数拿来生成token 再加密后与原来比较
+	// 1.把通过邮件发送的url中的参数拿来生成token 再加密后与原来比较
 	const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
 
 	// 2.查询用户
