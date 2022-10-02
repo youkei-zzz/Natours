@@ -20,7 +20,7 @@ const createSendToken = (user, statusCode, res) => {
 	if (process.env.NODE_ENV === 'production') {
 		cookieOptions.secure = true;
 	}
-
+	// 后面的中间件都可以用req.headers 里面 有cookie 和 authorization 两个属性 都是生成的这个jwt
 	res.cookie('jwt', token, cookieOptions);
 
 	// 从输出中删除密码
@@ -72,9 +72,10 @@ const login = catchAsync(async (req, res, next) => {
 exports.login = login;
 
 // 要么不用catchAsync包裹 要么用了就一定要 用async 修饰 否则执行 getAllTour时会报错   Cannot set headers after they are sent to the client
+// 想要通过检查 就要登录或注册因为这里面调用了res.cookie方法使得req,headers.authorization才能看见 这是关键
 const protect = catchAsync(async (req, res, next) => {
 	let token;
-	// 1.获取令牌并检查它是否在那里
+	// 1.获取令牌并检查它是否在那里  (由于  login 或者是singup 都调用了createSendToken函数 ，这个函数使用res.cookie 方法之后 下一个中间件就可以在req.headers.cookie或者是req.headers.authorization 里面看到关于token的信息)
 	if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
 		token = req.headers.authorization.split(' ')[1]; // Bearer 与 token之间是有一个空格的!
 	}
@@ -109,7 +110,6 @@ const restrictTo = (...roles) => {
 		if (!roles.includes(req.user.role)) {
 			return next(new AppError("You don't have permission to access this action", 403));
 		}
-
 		next();
 	};
 };
@@ -160,7 +160,6 @@ const resetPassword = catchAsync(async (req, res, next) => {
 			If you did't forgot please ignore this email!
 	*/
 	const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
-
 	// 2.查询用户
 	const user = await User.findOne({
 		// token一样

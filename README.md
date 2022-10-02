@@ -1,9 +1,11 @@
 ### **Mongoing 文档**
 
- # 🌟 [官方文档](https://mongoing.com/docs/reference/operator/aggregation/group.html)
+# 🌟 [官方文档](https://mongoing.com/docs/reference/operator/aggregation/group.html)
 
 ### `0. 永远不要用 update 的方法更新密码相关的东西`
->  **[绕过中间件的情况](https://mongoosejs.com/docs/middleware.html)**
+
+> **[绕过中间件的情况](https://mongoosejs.com/docs/middleware.html)**
+
 ### `1.query、params、body`
 
 ```javascript
@@ -50,8 +52,10 @@ _id : <0 或假>	    指定_id字段的抑制。
 <字段>:<表达式>	    添加新字段或重置现有字段的值。
 ```
 
-### `7. MongoDB中间件 | isModified() 函数` 
-> ### 👉 **[Mongoose官方文档](https://mongoosejs.com/docs/middleware.html)**
+### `7. MongoDB中间件 | isModified() 函数`
+
+> ### 👉 **[Mongoose 官方文档](https://mongoosejs.com/docs/middleware.html)**
+>
 > ### 👉 **[CSDN](https://blog.csdn.net/caseywei/article/details/109524964)**
 
 ```javascript
@@ -60,7 +64,7 @@ tourSchema.post("save", function (doc,next) {
 	console.log(doc); // 输出执行post的文档信息
 	if(!this.isModified('')){
 		// .....
-		// isModified() : 如果文档被改了返回true 否则为false 
+		// isModified() : 如果文档被改了返回true 否则为false
 		//  isModified('xxx') 如果给出指定的字段 则会检查给定字段的或者是包含这个字段的全路径是否被改变 改变了返回true 否则返回false
 	}
 	next();
@@ -121,8 +125,9 @@ app.all('*', (req, res, next) => {
 });
 ```
 
-### `9. Error.captureStack() 大概意思`  
->## 👉 **[CSDN](https://zwkkkk1.blog.csdn.net/article/details/83316772?spm=1001.2101.3001.6650.2&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-83316772-blog-120124102.t0_edu_mix&utm_relevant_index=3)** 
+### `9. Error.captureStack() 大概意思`
+
+> ## 👉 **[CSDN](https://zwkkkk1.blog.csdn.net/article/details/83316772?spm=1001.2101.3001.6650.2&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-83316772-blog-120124102.t0_edu_mix&utm_relevant_index=3)**
 
 <br>
 
@@ -183,15 +188,21 @@ const buf = await readFile('./package.json')
 const obj = JSON.parse(buf.toString('utf8'))
 console.log(obj.name) // 'Example'
 ```
-### `12. crypto 的大概用法` 
->## 👉  **[crypto(简书) ](https://www.jianshu.com/p/f94a6c8cafaa)**  
+
+### `12. crypto 的大概用法`
+
+> ## 👉 **[crypto(简书) ](https://www.jianshu.com/p/f94a6c8cafaa)**
+>
 > **注意：还有一个第三方包 bcrypt**
+
 ```javascript
 const resetToken = crypto.randomBytes(32).toString('hex');
-	// resetToken 得出随机的一个字符串  createHash指出要用什么加密算法  update 的参数是需要加密的数据。 update() 可以多次被调用，多次调用只是简单的把要加密的结果拼接起来。digest指明用什么形式输出这个字符串
-	this.passwordResetTOKEN = crypto.createHash('sha256').update(resetToken).digest('hex');
+// resetToken 得出随机的一个字符串  createHash指出要用什么加密算法  update 的参数是需要加密的数据。 update() 可以多次被调用，多次调用只是简单的把要加密的结果拼接起来。digest指明用什么形式输出这个字符串
+this.passwordResetTOKEN = crypto.createHash('sha256').update(resetToken).digest('hex');
 ```
+
 ### `13. res.cookie(name, value, [options])`
+
 ```javascript
 // Expires – 过期时间。指定cookie的生命期。具体是值是过期日期。如果想让cookie的存在期限超过当前浏览器会话时间，就必须使用这个属性。当过了到期日期时，浏览器就可以删除cookie文件，没有任何影响。
 
@@ -200,37 +211,45 @@ const resetToken = crypto.randomBytes(32).toString('hex');
 // Domain – 域。指定关联的WEB服务器或域。值是域名，比如goaler.com。这是对path路径属性的一个延伸。如果我们想让dev.mycompany.com 能够访问bbs.mycompany.com设置的cookies，该怎么办? 我们可以把domain属性设置成“mycompany.com”，并把path属性设置成“/”。FYI：不能把cookies域属性设置成与设置它的服务器的所在域不同的值。
 
 // Secure – 安全。指定cookie的值通过网络如何在用户和WEB服务器之间传递。这个属性的值或者是“secure”，或者为空。缺省情况下，该属性为空，也就是使用不安全的HTTP连接传递数据。如果一个 cookie 标记为secure，那么，它与WEB服务器之间就通过HTTPS或者其它安全协议传递数据。不过，设置了secure属性不代表其他人不能看到你机器本地保存的cookie。换句话说，把cookie设置为secure，只保证cookie与WEB服务器之间的数据传输过程加密，而保存在本地的cookie文件并不加密。如果想让本地cookie也加密，得自己加密数据。
-
-
 ```
+
 <br>
 
-> 设置cookie name 值为value, 接受字符串参数或者JSON对象。 path 属性默认为 "/".
+> 设置 cookie name 值为 value, 接受字符串参数或者 JSON 对象。 path 属性默认为 "/".
 
 ```javascript
- res.cookie('name', 'tobi', { domain: '.example.com', path: '/admin', secure: true });
+res.cookie('name', 'tobi', { domain: '.example.com', path: '/admin', secure: true });
 
- res.cookie('rememberme', '1', { expires: new Date(Date.now() + 900000), httpOnly: true });
+res.cookie('rememberme', '1', { expires: new Date(Date.now() + 900000), httpOnly: true });
 ```
 
-------------
+---
 
->maxAge 属性是一个便利的设置"expires",它是一个从当前时间算起的毫秒。 下面的代码和上一个例子中的第二行是同样的作用。
+> maxAge 属性是一个便利的设置"expires",它是一个从当前时间算起的毫秒。 下面的代码和上一个例子中的第二行是同样的作用。
 
 ```javascript
-res.cookie('rememberme', '1', { maxAge: 900000, httpOnly: true })
+res.cookie('rememberme', '1', { maxAge: 900000, httpOnly: true });
 ```
------------
->可以传一个序列化的JSON对象作为参数， 它会自动被bodyParser() 中间件解析。
+
+---
+
+> 可以传一个序列化的 JSON 对象作为参数， 它会自动被 bodyParser() 中间件解析。
 
 ```javascript
-res.cookie('cart', { items: [1,2,3] });
-res.cookie('cart', { items: [1,2,3] }, { maxAge: 900000 });
+res.cookie('cart', { items: [1, 2, 3] });
+res.cookie('cart', { items: [1, 2, 3] }, { maxAge: 900000 });
 ```
---------------
->这个方法也支持签名的cookies。 只需要简单的传递signed 参数。 res.cookie() 会使用通过 express.cookieParser(secret) 传 入的secret来签名这个值
+
+---
+
+> 这个方法也支持签名的 cookies。 只需要简单的传递 signed 参数。 res.cookie() 会使用通过 express.cookieParser(secret) 传 入的 secret 来签名这个值
 
 ```javascript
 res.cookie('name', 'tobi', { signed: true });
 ```
->稍后你就可以通过req.signedCookie 对象访问到这个值。
+
+> 稍后你就可以通过 req.signedCookie 对象访问到这个值。
+
+### `14. MongoDB 数据库关系`
+
+> ### 👉 **[官方文档](https://www.mongodb.com/developer/products/mongodb/mongodb-schema-design-best-practices/)**
