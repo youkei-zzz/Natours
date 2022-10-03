@@ -1,9 +1,16 @@
 const express = require('express');
-const {protect, restrictTo} = require('../controllers/authController.js');
-const reviewRouter = require('../routes/reviewRoutes')
+const { protect, restrictTo } = require('../controllers/authController.js');
+const reviewRouter = require('../routes/reviewRoutes');
 
 const {
-    getAllTours, createTour, getTour, updateTour, deleteTour, aliasTopTours, getTourStats, getMonthlyPlan,
+	getAllTours,
+	createTour,
+	getTour,
+	updateTour,
+	deleteTour,
+	aliasTopTours,
+	getTourStats,
+	getMonthlyPlan,
 } = require('../controllers/tourController.js');
 
 const router = express.Router();
@@ -16,17 +23,18 @@ const router = express.Router();
 router.use('/:tourId/reviews', reviewRouter);
 
 router.route('/tour-stats').get(getTourStats);
-router.route('/monthly-plan/:year').get(getMonthlyPlan);
+router.route('/monthly-plan/:year').get(protect, restrictTo('admin', 'lead-guide','guide'),getMonthlyPlan);
 // 验证用户合法性后再进行下一步
-router.route('/').get(protect, getAllTours).post(createTour);
+router
+	.route('/')
+	.get(getAllTours)
+	.post(protect, restrictTo('admin', 'lead-guide'), createTour);
 
 router
-    .route('/:id')
-    .get(getTour)
-    .patch(updateTour)
-    .delete(protect, restrictTo('admin', 'lead-guide'), deleteTour);
+	.route('/:id')
+	.get(getTour)
+	.patch(protect, restrictTo('admin', 'lead-guide'), updateTour)
+	.delete(protect, restrictTo('admin', 'lead-guide'), deleteTour);
 
 router.route('/top').get(aliasTopTours, getAllTours);
-
-
 module.exports = router;

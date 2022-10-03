@@ -73,7 +73,6 @@ userSchema.pre(/^find/, function(next) {
   next();
 });
 
-
 // methods 用于此架构上当前定义的方法的对象: (每个文档都能调用 所以要用 普通函数而不用箭头函数)
 
 // 检验用户输入的密码

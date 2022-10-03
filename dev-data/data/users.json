@@ -79,6 +79,7 @@
     "active": true,
     "photo": "user-9.jpg",
     "password": "$2a$12$r7/jtdWtzNfrfC7zw3uS.eDJ3Bs.8qrO31ZdbMljL.lUY0TAsaAL6"
+    
   },
   {
     "_id": "5c8a21d02f8fb814b56fa189",
@@ -115,6 +116,7 @@
     "active": true,
     "photo": "user-13.jpg",
     "password": "$2a$12$D3fyuS9ETdBBw5lOwceTMuZcDTyVq28ieeGUAanIuLMcSDz6bpfIe"
+    
   },
   {
     "_id": "5c8a23c82f8fb814b56fa18d",

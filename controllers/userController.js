@@ -3,13 +3,14 @@ const AppError = require('../utils/appError.js');
 // const { catchAsync } = require('../utils/catchAsync.js');
 const factory = require('../controllers/handleFactory.js');
 
-
-
 exports.getAllUser = factory.getAllxx(User);
 exports.getUser = factory.getOnexx(User);
 exports.updateUser = factory.updateOnexx(User); // 管理员更新用户 (没有protect中间件 因此不要在这里改密码)
 exports.deleteUser = factory.deleteOnexx(User);
-
+exports.getMe = (req, res, next) => {
+	req.params.id = req.user.id;
+	next();
+};
 
 const filterObj = (obj, ...allowedFields) => {
 	const newObj = {};
