@@ -16,11 +16,13 @@ const reviewSchema = new mongoose.Schema(
 			default: Date.now()
 		},
 		tour: {
+			// 数据库中是以Id为内容的  自己看看数据库里面就知道了
 			type: mongoose.Schema.ObjectId,
 			ref: 'Tour',
 			required: [true, 'Review must belong to a tour.']
 		},
 		user: {
+			// 数据库中是以Id为内容的  自己看看数据库里面就知道了
 			type: mongoose.Schema.ObjectId,
 			ref: 'User',
 			required: [true, 'Review must belong to a user']

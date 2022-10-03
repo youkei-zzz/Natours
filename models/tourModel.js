@@ -83,7 +83,7 @@ const tourSchema = new mongoose.Schema(
         toObject: {virtuals: true},
     }
 );
-// 虚拟填充   注意 这里的虚拟名称不能和本模型中的真实字段名称重复 否则报错    tour被ReviewModel 中的
+// 虚拟填充   注意虚拟名称不能和本模型中的真实字段名称重复 否则报错。
 tourSchema.virtual('reviews', {
     ref: 'Review', // 关联的模型
     foreignField: 'tour',//外键,关联模型Option的tour字段

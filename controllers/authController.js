@@ -35,8 +35,8 @@ const createSendToken = (user, statusCode, res) => {
 	});
 };
 
-const signup = catchAsync(async (req, res, next) => {
-	// 防止一个漏洞：只选择我们需要的数据 而不是把用户输入的所有数据一起创建文档
+exports.signup = catchAsync(async (req, res, next) => {
+	// 防止一个漏洞：只选择我们需要的数据 而不是把用户输入的所有数据一起创建文档 注意其他的都要改
 	const newUser = await User.create({
 		name: req.body.name,
 		email: req.body.email,
@@ -48,10 +48,9 @@ const signup = catchAsync(async (req, res, next) => {
 
 	createSendToken(newUser, 201, res);
 });
-exports.signup = signup;
 
 // async返回Promise可能有错误产生，又不想用重复的 try ... catch  就用我们包装的 catchAsync函数const
-const login = catchAsync(async (req, res, next) => {
+exports.login = catchAsync(async (req, res, next) => {
 	const { email, password } = req.body;
 	// 1.检查email password 是否存在  (在调用中间件后 使login函数马上结束  否则又会发送两个 Headers 过去 又会报错)
 	if (!email || !password) {
@@ -69,11 +68,10 @@ const login = catchAsync(async (req, res, next) => {
 	// 3.都满足 发送token到客户端
 	createSendToken(user, 200, res);
 });
-exports.login = login;
 
 // 要么不用catchAsync包裹 要么用了就一定要 用async 修饰 否则执行 getAllTour时会报错   Cannot set headers after they are sent to the client
 // 想要通过检查 就要登录或注册因为这里面调用了res.cookie方法使得req,headers.authorization才能看见 这是关键
-const protect = catchAsync(async (req, res, next) => {
+exports.protect = catchAsync(async (req, res, next) => {
 	let token;
 	// 1.获取令牌并检查它是否在那里  (由于  login 或者是singup 都调用了createSendToken函数 ，这个函数使用res.cookie 方法之后 下一个中间件就可以在req.headers.cookie或者是req.headers.authorization 里面看到关于token的信息)
 	if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -102,9 +100,8 @@ const protect = catchAsync(async (req, res, next) => {
 	req.user = currentUser; // 便于后面的中间件访问查询角色权限等的各种数据，非常有意义
 	next();
 });
-exports.protect = protect;
 
-const restrictTo = (...roles) => {
+exports.restrictTo = (...roles) => {
 	return (req, res, next) => {
 		// 错误的写为req.current.role 显示的报错不对
 		if (!roles.includes(req.user.role)) {
@@ -113,9 +110,8 @@ const restrictTo = (...roles) => {
 		next();
 	};
 };
-exports.restrictTo = restrictTo;
 
-const forgotPassword = catchAsync(async (req, res, next) => {
+exports.forgotPassword = catchAsync(async (req, res, next) => {
 	// 1.通过邮件中的邮箱中获取用户
 	const user = await User.findOne({ email: req.body.email });
 	if (!user) {
@@ -151,9 +147,8 @@ const forgotPassword = catchAsync(async (req, res, next) => {
 		return next(new AppError('Errors hanppen while sending email, Try again later!', 500));
 	}
 });
-exports.forgotPassword = forgotPassword;
 
-const resetPassword = catchAsync(async (req, res, next) => {
+exports.resetPassword = catchAsync(async (req, res, next) => {
 	// 1.把通过邮件发送的url中的参数拿来生成token 再加密后与原来比较 (以下是邮箱大致的格式)
 	/* 
 			Forgot Password? Just submit a patch request with yourr password and passConfirm to: http://127.0.0.1:3000/api/v1/users/resetPassword/84437bd0fbc25c1896d3002a6dd1e16268a192e7167fcb8a29981e23adb8a570.
@@ -190,9 +185,8 @@ const resetPassword = catchAsync(async (req, res, next) => {
 	// });
 	createSendToken(user, 200, res);
 });
-exports.resetPassword = resetPassword;
 
-const updatePassword = catchAsync(async (req, res, next) => {
+exports.updatePassword = catchAsync(async (req, res, next) => {
 	const user = await User.findById(req.user.id).select('+password');
 	if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
 		return next(new AppError('The password you have entered is wrong!', 401));
@@ -212,9 +206,8 @@ const updatePassword = catchAsync(async (req, res, next) => {
 	// });
 	createSendToken(user, 200, res);
 });
-exports.updatePassword = updatePassword;
 
-const deleteMe = catchAsync(async (req, res, next) => {
+exports.deleteMe = catchAsync(async (req, res, next) => {
 	await User.findByIdAndUpdate(req.user.id, { active: false });
 
 	res.status(204).json({
@@ -222,4 +215,3 @@ const deleteMe = catchAsync(async (req, res, next) => {
 		data: null,
 	});
 });
-exports.deleteMe = deleteMe;
