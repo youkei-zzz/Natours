@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
-// const User = require('./userModel.js');
 
 const tourSchema = new mongoose.Schema(
 	{
@@ -14,7 +13,7 @@ const tourSchema = new mongoose.Schema(
 			// 完整写法为priceDiscount中验证器的写法
 			// validate: [validator.isAlpha,'Tour name must only contain characters!'],
 		},
-		slug: { type: String },
+		slug: String,
 		duration: { type: Number, required: [true, 'A tour must have a duration!'] },
 		maxGroupSize: { type: Number, required: [true, 'A tour must have a group size!'] },
 		difficulty: {
@@ -27,11 +26,12 @@ const tourSchema = new mongoose.Schema(
 		},
 		ratingsAverage: {
 			type: Number,
-			default: 0,
+			default: 4.5,
 			min: [1, 'ratingsAverage must be above 1.0 !'],
-			max: [5.0, 'ratingsAverage must be below 5.0 !'],
+			max: [5, 'ratingsAverage must be below 5.0 !'],
+			set: val => Math.round(val * 10) / 10,
 		},
-		ratingQuntity: { type: Number, default: 0 },
+		ratingsQuantity: { type: Number, default: 0 },
 		rating: { type: Number, default: 4.5 },
 		price: { type: Number, required: [true, 'a tour must have a price!'] },
 		priceDiscount: {
@@ -48,7 +48,7 @@ const tourSchema = new mongoose.Schema(
 		description: { type: String, trim: true },
 		imageCover: { type: String, required: [true, ' A tour must have a image'] },
 		images: [String],
-		createdAt: { type: Date, default: Date.now() },
+		createdAt: { type: Date, default: Date.now(), select: false },
 		startDates: [Date],
 		secretTour: { type: Boolean, default: false },
 		//嵌入文档
@@ -83,11 +83,17 @@ const tourSchema = new mongoose.Schema(
 		toObject: { virtuals: true },
 	}
 );
+
+//建立索引能能够加速查询速度
+tourSchema.index({ pratingsAverage: -1, price: 1 });
+tourSchema.index({ slug: 1 });
+tourSchema.index({startLocation:'2dsphere'})
+
 // 虚拟填充   注意虚拟名称不能和本模型中的真实字段名称重复 否则报错。
 tourSchema.virtual('reviews', {
-	ref: 'Review', // 关联的模型
-	foreignField: 'tour', //外键,关联模型Option的tour字段
-	localField: '_id', // 内键,schema对应的模型的_id
+	ref: 'Review', // 要去这个关联的模型里面查找
+	foreignField: 'tour', //找到Review的tour里面
+	localField: '_id', // 与这个模型中对应_id相同的那一个部分
 });
 
 // 必须使用 普通函数的形式
@@ -97,12 +103,14 @@ tourSchema.virtual('durationWeeks').get(function () {
 
 // MongoDB 中间件 :
 
+//#region
 // 在schema中指定一个guides数组 填写的时候把ID写在body里面，通过  手动  的查询并赋值给guides ， 但是 我们还可以用 另外一个类型来实现自动的嵌入文档
 // tourSchema.pre('save', async function (next) {
 // 	// 创建的时候 body.guides里面填的是id
 // 	const guidesPromise = this.guides.map(async id => User.findById(id));
 // 	this.guides = await Promise.all(guidesPromise);
 // });
+//#endregion
 
 tourSchema.pre('save', function (next) {
 	// this 指向当前的需要被保存进MongoDB的文档
@@ -117,8 +125,13 @@ tourSchema.pre('save', function (next) {
 tourSchema.pre(/^find/, function (next) {
 	console.log('pre 中间件被调用!');
 	// this 指向 ApiFeature中的参数 Tour.find()
-	this.start = Date.now();
 	this.find({ secretTour: { $ne: true } });
+	this.start = Date.now();
+	next();
+});
+
+tourSchema.pre(/^find/, function (next) {
+	this.populate({ path: 'guides', select: '-__v -passwordChangedAt' });
 	next();
 });
 
@@ -129,18 +142,13 @@ tourSchema.post(/^find/, function (doc, next) {
 	next();
 });
 
-tourSchema.pre(/^find/, function (next) {
-	this.populate({ path: 'guides', select: '-__v -passwordChangedAt' });
-	next();
-});
-
 // Aggregation MiddleWare
-tourSchema.pre('aggregate', function (next) {
-	// 指向当前的aggregate
-	console.log('aggregate 中间件被调用');
-	this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
-	next();
-});
+// tourSchema.pre('aggregate', function (next) {
+// 	// 指向当前的aggregate
+// 	console.log('aggregate 中间件被调用');
+// 	this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+// 	next();
+// });
 
 const Tour = mongoose.model('Tour', tourSchema);
 module.exports = Tour;

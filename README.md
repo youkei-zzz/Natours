@@ -1,6 +1,8 @@
 ### **Mongoing 文档**
 
-# 🌟 [官方文档](https://mongoing.com/docs/reference/operator/aggregation/group.html)
+## 🌟①. [官方文档](https://mongoosejs.com/docs/)
+
+## ✨②. [官方文档](https://mongodb.net.cn/manual/crud/)
 
 ### `0. 永远不要用 update 的方法更新密码相关的东西`
 
@@ -250,6 +252,66 @@ res.cookie('name', 'tobi', { signed: true });
 
 > 稍后你就可以通过 req.signedCookie 对象访问到这个值。
 
-### `14. MongoDB 数据库关系`
+### `14. MongoDB 数据库模型关系`
 
 > ### 👉 **[官方文档](https://www.mongodb.com/developer/products/mongodb/mongodb-schema-design-best-practices/)**
+
+### `15. 索引可以加快搜索速度`
+
+```javascript
+db.collection.createIndex({ 'a.loc': 1, 'a.qty': 1 }, { unique: true }); // MongoDB 将对索引键值的组合强制实施唯一性。
+// 因此我们可以利用这一特性对 每个用户限制只能评论一次
+```
+
+> 👉 **[CSDN(操作)](https://blog.csdn.net/qq_46049600/article/details/108178757)**
+> 👉 **[Compound Index](https://www.mongodb.com/docs/v6.0/core/index-unique/)**
+
+---
+
+### `16. Aggregate ` [聚合管道](https://mongoing.com/docs/reference/operator/aggregation.html)
+
+```javascript
+1.$group:	// 按指定的标识符表达式对输入文档进行分组，并将累加器表达式（如果指定）应用于每个组。使用所有输入文档，并为每个不同的组输出一个文档。输出文档仅包含标识符字段和累积字段（如果已指定）。按某个指定的表达式对文档进行分组，并将每个不同分组的文档输出到下一阶段。输出文档包含一个_id字段，该字段包含按键的不同组。输出文档还可以包含计算字段，这些字段保存按$group_id字段分组的某个累加器表达式的值。$group不对其输出文档进行排序。
+```
+
+> 👉 **[$group](https://mongoing.com/docs/reference/operator/aggregation/group.html#pipe._S_group)**
+
+```javascript
+2.$set: // 运算符将字段的值替换为指定的值。
+```
+
+> 👉 **[$set](https://www.mongodb.com/docs/v6.0/reference/operator/update/set/)**
+
+```javascript
+3.$geoNear://按距指定点最近到最远的顺序输出文档。
+```
+
+> 👉 **[$geoNear](https://www.mongodb.com/docs/manual/reference/operator/aggregation/geoNear/)**
+
+```javascript
+4.$geoWithin: //选择具有完全存在于指定形状内的地理空间数据的文档。
+	可用的形状运算符有：
+	$box
+	$polygon
+	$center //（定义一个圆）
+	$centerSphere //（在球体上定义一个圆）。为地理空间使用球面几何的查询。该查询返回圆圈范围内的文档。
+
+// 如果您使用经度和纬度，请按 的顺序指定坐标longitude, latitude。
+
+
+{
+   <location field>: {
+      $geoWithin: { $centerSphere: [ [ <x>, <y> ], <radius> ] }
+   }
+}
+
+例如:
+db.places.find( {
+  loc: { $geoWithin: { $centerSphere: [ [ -88, 30 ], 10/3963.2 ] } }
+} )
+
+```
+
+> 👉 **[$geoWithin](https://www.mongodb.com/docs/manual/reference/operator/query/geoWithin/#mongodb-query-op.-geoWithin)**
+
+> 👉 **[运算符 : $centerSphere](https://www.mongodb.com/docs/manual/reference/operator/query/centerSphere/)**

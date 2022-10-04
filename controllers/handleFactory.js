@@ -58,8 +58,8 @@ exports.getOnexx = (Model, popuoptions) =>
 		// 在查询时用  populate() （可以加入配置项）把字段中 guides字段填充（本质上 populate仍然会创建一个查询 如果程序很小倒无所谓） , 创建时 仍然是 ObjectId的类型,这里为了简化 就放在tourModel.js 里面的pre查询中间件里面
 		let query = Model.findById(req.params.id);
 		if (popuoptions) query.populate(popuoptions);
-		const doc = await Model.findById(req.params.id).populate(popuoptions);
-		if (!query) {
+		const doc = await query;
+		if (!doc) {
 			// return 提前退出函数 并用next进入app中的下一个中间件
 			// 同时return 能避免在转转转 转到 errorController.js 里面 使用res方法返回时 这里又执行 res方法 '会报错 Cannot set headers after they are sent to the client'
 			// 不return会报错 Cannot set headers after they are sent to the client
@@ -90,6 +90,7 @@ exports.getAllxx = Model =>
 			.limitFields()
 			.paginate();
 		const document = await features.query;
+
 
 		// 3.SEND RESPONSE
 		res.status(200).json({

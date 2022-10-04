@@ -11,6 +11,8 @@ const {
 	aliasTopTours,
 	getTourStats,
 	getMonthlyPlan,
+	getToursWithin,
+	getDistances,
 } = require('../controllers/tourController.js');
 
 const router = express.Router();
@@ -24,7 +26,11 @@ router.use('/:tourId/reviews', reviewRouter);
 
 router.route('/tour-stats').get(getTourStats);
 router.route('/monthly-plan/:year').get(protect, restrictTo('admin', 'lead-guide','guide'),getMonthlyPlan);
-// 验证用户合法性后再进行下一步
+
+router.route('/tours-within/:distance/center/:latlng/unit/:unit').get(getToursWithin);
+
+router.route('/distances/:latlng/unit/:unit').get(getDistances);
+
 router
 	.route('/')
 	.get(getAllTours)
