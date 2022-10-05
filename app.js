@@ -73,7 +73,10 @@ app.use((req, res, next) => {
 // 匹配对应路由的中间件
 
 app.get('/', (req, res) => {
-	res.status(200).render('base');
+	res.status(200).render('base', {
+		subject: 'Hello Natours!',
+		user: 'Youncs',
+	});
 });
 
 app.use('/api/v1/tours', tourRouter); // 如果路径匹配但中途出错或者是什么情况 要有next()跳出这个中间件 进入下一个 ，下一个因为路径是user匹配不上 所以进入all('*') 里面
