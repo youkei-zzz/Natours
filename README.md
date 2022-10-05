@@ -315,3 +315,24 @@ db.places.find( {
 > 👉 **[$geoWithin](https://www.mongodb.com/docs/manual/reference/operator/query/geoWithin/#mongodb-query-op.-geoWithin)**
 
 > 👉 **[运算符 : $centerSphere](https://www.mongodb.com/docs/manual/reference/operator/query/centerSphere/)**
+
+### `17. 路径`
+
+```javascript
+// 在图片和css文件加载的时候路径很容易出错 从而导致 加载失败
+src="/xxxx/xxx" 和 src="xxxx/xxx  并不一样。
+// 有斜线的从根路径开始
+// 没有斜线的的是从 当前网站的路径 开始找css文件 或者是图片
+```
+### `18. 虚拟填充`
+```javascript
+// 请记住，默认情况下，虚拟虚拟不包括在输出中。如果您希望在使用 Express 的 res.json（） 函数 或 等函数时显示填充虚拟虚拟，请在架构和选项上设置该选项。toJSON()toObject
+
+const authorSchema = new Schema({ 字段... }, {
+  toJSON: { virtuals: true }, // So `res.json()` and other `JSON.stringify()` functions include virtuals
+  toObject: { virtuals: true } // So `console.log()` and other functions that use `toObject()` include virtuals
+});
+
+option:{select:从 populate 的文档中选择返回的字段。}
+```
+> 👉 **[填充](https://mongoosejs.com/docs/populate.html)**

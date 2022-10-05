@@ -12,6 +12,7 @@ const hpp = require('hpp');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes.js');
+const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
 
@@ -71,15 +72,8 @@ app.use((req, res, next) => {
 	next();
 });
 // 匹配对应路由的中间件
-
-app.get('/', (req, res) => {
-	res.status(200).render('base', {
-		subject: 'Hello Natours!',
-		user: 'Youncs',
-	});
-});
-
-app.use('/api/v1/tours', tourRouter); // 如果路径匹配但中途出错或者是什么情况 要有next()跳出这个中间件 进入下一个 ，下一个因为路径是user匹配不上 所以进入all('*') 里面
+app.use('/', viewRouter); //  网页的登录界面
+app.use('/api/v1/tours', tourRouter); // 如果路径匹配但中途出错或者是什么情况 要有next()跳出这个中间件进入下一个下一个因为路径是user匹配不上 所以进入all('*') 里面
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
 
