@@ -324,8 +324,19 @@ src="/xxxx/xxx" 和 src="xxxx/xxx  并不一样。
 // 有斜线的从根路径开始
 // 没有斜线的的是从 当前网站的路径 开始找css文件 或者是图片
 ```
+
 ### `18. 虚拟填充`
+
+**`Query.populate(path, [select], [model], [match], [options])`**
+
 ```javascript
+
+select:从 populate 的文档中选择返回的字段
+path:指定要查询的表
+fields:填充的内容
+Model: 可选，指定关联字段的 model，如果没有指定就会使用Schema的ref
+Object:可选，指定附加的其他查询选项，如排序以及条数限制等等。
+
 // 请记住，默认情况下，虚拟虚拟不包括在输出中。如果您希望在使用 Express 的 res.json（） 函数 或 等函数时显示填充虚拟虚拟，请在架构和选项上设置该选项。toJSON()toObject
 
 const authorSchema = new Schema({ 字段... }, {
@@ -333,6 +344,7 @@ const authorSchema = new Schema({ 字段... }, {
   toObject: { virtuals: true } // So `console.log()` and other functions that use `toObject()` include virtuals
 });
 
-option:{select:从 populate 的文档中选择返回的字段。}
+
 ```
+
 > 👉 **[填充](https://mongoosejs.com/docs/populate.html)**

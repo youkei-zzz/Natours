@@ -26,7 +26,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // 用来设置一些安全的 HTTP Headers  所以应该把它放在最上面的位置 而不是放在后面 甚至是最下面
-app.use(helmet()); // helmet() 返回另一个函数 等在这里 直到到达这个全局中间件后被调用
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false })); // helmet() 返回另一个函数 等在这里 直到到达这个全局中间件后被调用
 
 // 一小时内同一个IP请求超过一百次就不通过 。 max 应该依据程序填写而不是随意
 const limiter = rateLimit({
