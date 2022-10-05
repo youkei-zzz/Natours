@@ -1326,3 +1326,7 @@ body {
 img{
   user-select: none;
 }
+a{
+  color: #ffffff;
+  text-decoration: none;
+}

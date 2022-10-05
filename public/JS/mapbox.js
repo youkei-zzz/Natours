@@ -1,4 +1,6 @@
 /* eslint-disable prefer-destructuring */
+console.log(window.location.pathname)
+
 const locations = JSON.parse(document.getElementById('map').dataset.locations);
 console.log(locations);
 
