@@ -76,6 +76,10 @@ exports.protect = catchAsync(async (req, res, next) => {
 	// 1.获取令牌并检查它是否在那里  (由于  login 或者是singup 都调用了createSendToken函数 ，这个函数使用res.cookie 方法之后 下一个中间件就可以在req.headers.cookie或者是req.headers.authorization 里面看到关于token的信息)
 	if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
 		token = req.headers.authorization.split(' ')[1]; // Bearer 与 token之间是有一个空格的!
+	} else if (req.cookies.jwt) {
+		// 因为登录后会发送一个cookie保存在浏览器 ， 此时用户也可以通过这个保存在浏览器的cookie来来进行下一步操作 因此也要有这一个判断
+		// 前提是在app.js 中使用了 cookie parser 中间件
+		token = req.cookies.jwt;
 	}
 	if (!token)
 		return next(new AppError('You are not logged in! Please long in to get access.', 401));
@@ -98,6 +102,28 @@ exports.protect = catchAsync(async (req, res, next) => {
 
 	// 验证通过 授予访问GetAllTour的权限
 	req.user = currentUser; // 便于后面的中间件访问查询角色权限等的各种数据，非常有意义
+	next();
+});
+
+exports.renderLoggedIn = catchAsync(async (req, res, next) => {
+	if (req.cookies.jwt) {
+		const decode = await promisify(jwt.verify)(req.cookies.jwt, process.env.JWT_SECRET);
+
+		const currentUser = await User.findById(decode.id);
+		if (!currentUser) {
+			return next();
+		}
+
+		// 4.检查用户在颁发令牌后是否更改了密码 ( 签发token后用户的密码改了 那么也不能访问被保护的路由)
+		if (currentUser.changedPasswordAfter(decode.iat)) {
+			return next();
+		}
+
+		// 用户确实登录了
+		console.log(res.locals)
+		res.locals.user = currentUser;
+		return next();
+	}
 	next();
 });
 

@@ -4,6 +4,13 @@ header.header
   .header__logo
     img(src='/img/logo-white.png' alt='Natours logo')
   nav.nav.nav--user
-    button.nav__el
-      a.login(href="/login") LOG IN
-    button.nav__el.nav__el--cta sign up 
+    //- 如果用户已经登录 那么页面上不要有这两个标签了
+    if user
+      a.nav__el.nav__el--logout(href='#') LOG OUT
+      a.nav__el(href='#')
+        img.nav__user-img(src=`/img/users/${user.photo}` alt=`Photo of ${user.name}`)
+        span=user.name.split(' ')[0]
+
+    else
+      a.nav__el(href="/login") LOG IN
+      button.nav__el.nav__el--cta sign up 

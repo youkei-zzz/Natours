@@ -346,5 +346,13 @@ const authorSchema = new Schema({ 字段... }, {
 
 
 ```
-
 > 👉 **[填充](https://mongoosejs.com/docs/populate.html)**
+
+## `19. Npm 安装命令`
+```console
+npm install moduleName 
+npm install --global moduleName 
+npm install --save moduleName
+npm install --save-dev moduleName
+```
+> [npm](https://baijiahao.baidu.com/s?id=1637471064122396966)
