@@ -1,23 +1,20 @@
-/* eslint-disable */
-import axios from "axios";
-
-export const login = async (email, password) => {
+export default async (email, password) => {
 	try {
-		const res = await axios({
-			method: 'post',
-			url: 'http://127.0.0.1:3000/api/v1/users/login',
-			data: {
-				email: email,
-				password: password,
-			},
-		});
-		if (res.data.status === 'success') {
-			window.location.href = '/';
-		}
-		console.log(res);
+		const ajax = new XMLHttpRequest();
+		ajax.open('POST', 'http://127.0.0.1:3000/api/v1/users/login');
+		ajax.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		ajax.send(`email=${email}&password=${password}`);
+		ajax.onreadystatechange = function () {
+			if (ajax.readyState === 4) {
+				if (ajax.status === 200 && ajax.status < 300) {
+					console.log(ajax.response);
+					
+				}
+			}
+		};
+
+		window.location.href = '/';
 	} catch (error) {
 		alert(error);
 	}
 };
-
-

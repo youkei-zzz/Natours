@@ -1,9 +1,10 @@
-// import "@babel/polyfill"
-import { login } from './login.js';
-import { displayMap } from './mapbox.js';
+import login from './login.js';
+import displayMap from './mapbox.js';
+
+console.log('hello world');
 
 const mapBox = document.getElementById('map');
-const loginForm = document.querySelector('.from');
+const loginForm = document.querySelector('.form--login');
 
 if (mapBox) {
 	const locations = JSON.parse(mapBox.dataset.locations);
@@ -18,4 +19,4 @@ if (loginForm) {
 		const password = document.getElementById('password').value;
 		login(email, password);
 	});
-}
+} 

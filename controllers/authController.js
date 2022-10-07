@@ -120,7 +120,7 @@ exports.renderLoggedIn = catchAsync(async (req, res, next) => {
 		}
 
 		// 用户确实登录了
-		console.log(res.locals)
+		// console.log(res.locals)
 		res.locals.user = currentUser;
 		return next();
 	}

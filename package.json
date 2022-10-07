@@ -2,15 +2,8 @@
   "name": "3-natours",
   "version": "1.0.0",
   "description": "",
-  "main": "public/js/bundle.js",
-  "source": "public/js/index.js",
-  "type": "commonjs",
-  "targets": {
-    "default": {
-      "context": "browser",
-      "outputFormat": "commonjs"
-    }
-  },
+  "module": "./public/js/bundle.js",
+  "source": "./public/js/index.js",
   "scripts": {
     "start-dev": "nodemon server.js",
     "start-pro": "set NODE_ENV=production&&nodemon server.js",

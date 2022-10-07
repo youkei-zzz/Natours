@@ -36,11 +36,12 @@ const limiter = rateLimit({
 	message: 'We have received too many requests from this IP, try again one hour later!',
 });
 app.use('/api', limiter); // 给所有的api接口都使用
-
 //就是 Body parser, 从 body数据中读取json数据转换为 req.body。 json()中可以传配置项
 // limit: 控制最大请求正文大小。如果这是一个数字，则该值指定字节数;如果是字符串，则该值将传递到字节库进行解析。默认值为“100kb
 //  配置项有：inflate limit type verify
 app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true }));
+
 
 // 解析来自请求的cookie数据
 app.use(cookieParser());
