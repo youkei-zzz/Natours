@@ -69,6 +69,18 @@ exports.login = catchAsync(async (req, res, next) => {
 	createSendToken(user, 200, res);
 });
 
+exports.logout = async (req, res, next) => {
+	res.cookie('jwt', 'logout', {
+		// 为了不要使得 报错 jwt malformed ，因为我们传的 token是 空 这里触发 renderloggedin 中间件 在jwt.verify 会触发错误 进入catchAsync 于是报错  可以删掉 renderedLoggedin 的 catchAsync 用try catch包裹 catch error的时候 直接 returnnext()就不会报错 。
+		// expires: new Date( new Date().getTime() + 100),  // 似乎把时间设置成 0.1s 之后也不会报错了....   也可以用 maxAge: 100,
+		maxAge: 100,  // maxAge 属性是一个便利的设置"expires",它是一个从当前时间算起的毫秒。
+		httpOnly: true,
+	});
+	res.status(200).json({
+		status: 'success',
+	});
+};
+
 // 要么不用catchAsync包裹 要么用了就一定要 用async 修饰 否则执行 getAllTour时会报错   Cannot set headers after they are sent to the client
 // 想要通过检查 就要登录或注册因为这里面调用了res.cookie方法使得req,headers.authorization才能看见 这是关键
 exports.protect = catchAsync(async (req, res, next) => {

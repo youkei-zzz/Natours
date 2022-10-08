@@ -63,6 +63,7 @@ const SendErrorPro = (err, res) => {
 	}
 };
 
+// --------------------------------------------------------
 // 参数这样设置为4个 Express 就能识别为这是一个错误中间件 !!!!!
 module.exports = (err, req, res, next) => {
 	console.log('由globalErrorHandler中间件进入:');

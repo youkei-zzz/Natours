@@ -1,15 +1,15 @@
-import login from './login.js';
+import { login, logout } from './login.js';
 import displayMap from './mapbox.js';
 
 console.log('hello world');
 
 const mapBox = document.getElementById('map');
 const loginForm = document.querySelector('.form--login');
+const logoutButton = document.querySelector('.nav__el--logout');
 
 if (mapBox) {
 	const locations = JSON.parse(mapBox.dataset.locations);
 	displayMap(locations);
-	console.log(locations);
 }
 
 if (loginForm) {
@@ -19,4 +19,11 @@ if (loginForm) {
 		const password = document.getElementById('password').value;
 		login(email, password);
 	});
-} 
+}
+
+if (logoutButton) {
+	logoutButton.addEventListener('click', e => {
+		e.preventDefault();
+		logout();
+	});
+}

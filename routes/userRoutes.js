@@ -8,6 +8,7 @@ router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 router.post('/signup', authController.signup);
 router.post('/login', authController.login);
+router.get('/logout', authController.logout);
 
 /* -> */router.use(authController.protect); // 因为是按顺序执行中间件 使用从这个中间件以下的部分全部都要 检验用户时是否登录
 

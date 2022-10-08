@@ -1,4 +1,5 @@
 const Tour = require('../models/tourModel.js');
+const AppError = require('../utils/appError.js');
 const { catchAsync } = require('../utils/catchAsync.js');
 
 function GMTToStr(time) {
@@ -20,6 +21,7 @@ function GMTToStr(time) {
 
 exports.getOverview = catchAsync(async (req, res, next) => {
 	const tours = await Tour.find();
+	// 改变时间格式
 	tours.forEach(tour => {
 		tour.startDates[0] = GMTToStr(tour.startDates[0]);
 		tour.startDates[1] = GMTToStr(tour.startDates[1]);
@@ -31,13 +33,16 @@ exports.getOverview = catchAsync(async (req, res, next) => {
 		tours,
 	});
 });
-exports.getTour = catchAsync(async (req, res) => {
+exports.getTour = catchAsync(async (req, res, next) => {
 	// 正因为填充了过后 后面在tour.pug页面上 才能使用 在遍历guides时取出每一个guide对象获取对应的key-value
 	const tour = await Tour.find({ slug: req.params.slug }).populate({
 		path: 'reviews',
 		fields: 'review rating user',
 	});
 	// console.log(tour[0].guides);
+	if (!tour.length) {
+		return next(new AppError('There is no tour with that name', 404));
+	}
 
 	res.status(200).render('tour', {
 		title: tour[0].name,
@@ -46,7 +51,7 @@ exports.getTour = catchAsync(async (req, res) => {
 });
 
 exports.getLoginForm = catchAsync(async (req, res, next) => {
-    res.status(200).render('login',{
-			title:'Log into your account',
-		})
+	res.status(200).render('login', {
+		title: 'Log into your account',
+	});
 });
