@@ -1,13 +1,13 @@
 const User = require('../models/userModel.js');
-const { catchAsync } = require('../utils/catchAsync.js');
+const {catchAsync} = require('../utils/catchAsync.js');
 const jwt = require('jsonwebtoken');
-const { promisify } = require('util');
+const {promisify} = require('util');
 const AppError = require('../utils/appError.js');
 const sendEmail = require('../utils/email.js');
 const crypto = require('crypto');
 
 const signToken = id => {
-	return jwt.sign({ id }, process.env.JWT_SECRET, {
+	return jwt.sign({id}, process.env.JWT_SECRET, {
 		expiresIn: process.env.JWT_EXPIRES_IN,
 	});
 };
@@ -51,14 +51,14 @@ exports.signup = catchAsync(async (req, res, next) => {
 
 // async返回Promise可能有错误产生，又不想用重复的 try ... catch  就用我们包装的 catchAsync函数const
 exports.login = catchAsync(async (req, res, next) => {
-	const { email, password } = req.body;
+	const {email, password} = req.body;
 	// 1.检查email password 是否存在  (在调用中间件后 使login函数马上结束  否则又会发送两个 Headers 过去 又会报错)
 	if (!email || !password) {
 		return next(new AppError('Please provide email or password!', 400));
 	}
 	// 2.检查用户是否存在 和 密码是否正确 (由于设置了password字段在数据库查询时不选择输出这里可以手动选择输出 用 "+" + 字段名)
 	// 使用await能接收到查询的数据 不然只能看到一堆 query语句配置
-	const user = await User.findOne({ email }).select('+password');
+	const user = await User.findOne({email}).select('+password');
 	// 由于correctPassword是异步函数因此也要等待结果返回 (这个函数是userModel.js中通过 Schema.methods方法挂载到实例对象 身上 的)
 	const correct = await user.correctPassword(password, user.password);
 	if (!user || !correct) {
@@ -114,6 +114,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
 	// 验证通过 授予访问GetAllTour的权限
 	req.user = currentUser; // 便于后面的中间件访问查询角色权限等的各种数据，非常有意义
+	res.locals.user = currentUser
 	next();
 });
 
@@ -151,7 +152,7 @@ exports.restrictTo = (...roles) => {
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
 	// 1.通过邮件中的邮箱中获取用户
-	const user = await User.findOne({ email: req.body.email });
+	const user = await User.findOne({email: req.body.email});
 	if (!user) {
 		return next(new AppError('There is no user with email address', 404));
 	}
@@ -159,7 +160,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 	// 2.生成随机的重置token 保存到文档上 并返回这个token过来
 	const resetToken = user.createPasswordResetToken();
 	// 上一步执行完了以后往往所有文档里增添了一个字段 但是还未保存 这里就执行一下保存使文档数据更新 ，但是不需要在执行 save的时候验证字段(目的只是为了保存)
-	await user.save({ validateBeforeSave: false });
+	await user.save({validateBeforeSave: false});
 	// await user.save();
 
 	// 3. 发送生成的token给用户
@@ -180,7 +181,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 		//发送邮件出错了，那么保存这两个属性也没必要，本来这两个属性就是用来重置密码时验证用的，因此把查询的文档中的两个字段重置为undefined不让这两个字段显示 并执行保存
 		user.passwordResetToken = undefined;
 		user.passwordExpires = undefined;
-		await user.save({ validateBeforeSave: false });
+		await user.save({validateBeforeSave: false});
 
 		return next(new AppError('Errors hanppen while sending email, Try again later!', 500));
 	}
@@ -188,7 +189,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
 	// 1.把通过邮件发送的url中的参数拿来生成token 再加密后与原来比较 (以下是邮箱大致的格式)
-	/* 
+	/*
 			Forgot Password? Just submit a patch request with yourr password and passConfirm to: http://127.0.0.1:3000/api/v1/users/resetPassword/84437bd0fbc25c1896d3002a6dd1e16268a192e7167fcb8a29981e23adb8a570.
 			If you did't forgot please ignore this email!
 	*/
@@ -198,7 +199,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 		// token一样
 		passwordResetToken: hashedToken,
 		// token一样还不够 还要保证过期的时间是在将来
-		passwordResetExpires: { $gt: Date.now() },
+		passwordResetExpires: {$gt: Date.now()},
 	});
 
 	// 查不到
@@ -246,7 +247,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
-	await User.findByIdAndUpdate(req.user.id, { active: false });
+	await User.findByIdAndUpdate(req.user.id, {active: false});
 
 	res.status(204).json({
 		status: 'success',

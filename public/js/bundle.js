@@ -19,7 +19,7 @@ const $e33d9ff231aec008$export$596d806903d1f59e = async (email, password)=>{
     ajax.onreadystatechange = function() {
         if (ajax.readyState === 4) {
             if (ajax.status === 200 && ajax.status < 300) {
-                (0, $fc9f18cd978afa5b$export$de026b00723010c1)("success", "Loged in successfully!");
+                (0, $fc9f18cd978afa5b$export$de026b00723010c1)("success", "Logged in successfully!");
                 window.location.href = "/";
             } else (0, $fc9f18cd978afa5b$export$de026b00723010c1)("error", JSON.parse(ajax.responseText).message);
         }
@@ -34,7 +34,7 @@ const $e33d9ff231aec008$export$a0973bcfe11b05c9 = ()=>{
         if (ajax.readyState === 4) {
             if (ajax.status === 200 && ajax.status < 300) {
                 (0, $fc9f18cd978afa5b$export$de026b00723010c1)("success", "Logged out successfully!");
-                location.reload(true);
+                window.location.href = "/";
             } else (0, $fc9f18cd978afa5b$export$de026b00723010c1)("error", JSON.parse(ajax.responseText).message);
         }
     };

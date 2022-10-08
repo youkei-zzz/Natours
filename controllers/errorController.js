@@ -33,34 +33,60 @@ const handleExpiredError = () => {
 	return new AppError('Your token has expired! Please log in again.', 401);
 };
 
-// 总体规定不同的模式下应该发给客户端哪些信息
+// 总体规定不同的模式下应该发给客户端哪些信息  这些都是错误处理中间件  有四个参数 err,req,res,next
 // 1.开发模式
-const SendErrorDev = (err, res) => {
-	res.status(err.statusCode).json({
-		status: err.status,
-		message: err.message, // err 继承Error的 message 属性
-		error: err,
-		stack: err.stack,
+const SendErrorDev = (err, req, res) => {
+	// A) API
+	if (req.originalUrl.startsWith('/api')) {
+		return res.status(err.statusCode).json({
+			status: err.status,
+			error: err,
+			message: err.message,
+			stack: err.stack,
+		});
+	}
+
+	// B) RENDERED WEBSITE
+	console.log('ERROR 💥 😲😲😲');
+	console.log(err);
+	return res.status(err.statusCode).render('error', {
+		title: 'Something went wrong!',
+		msg: err.message,
 	});
 };
 // 生产模式
-const SendErrorPro = (err, res) => {
-	// 客户端输入错误
-	if (err.isOperational) {
-		res.status(err.statusCode).json({
-			status: err.status,
-			message: err.message, // err 继承Error的 message 属性
-		});
-	}
-	// 编程出错或者是 第三方包出错
-	else {
-		console.error(`The error ' ${err.name}:${err.message} ' hanppened ⁉️ ....`);
-		// 发送信息给客户端
-		res.status(500).json({
+const SendErrorPro = (err, req, res) => {
+	// API
+	if (req.originalUrl.startsWith('/api')) {
+		// A） 操作性、受信任的错误：向客户端发送消息
+		if (err.isOperational) {
+			return res.status(err.statusCode).json({
+				status: err.status,
+				message: err.message,
+			});
+		}
+		// B）编程或其他未知错误：不要泄露错误详细信息
+		console.error('ERROR 💥', err);	// 1） 日志错误
+		return res.status(500).json({
 			status: 'error',
-			message: 'Something went wrong!', // 发一条通用的消息
+			message: 'Something went very wrong!',
+		});// 2) 发送通用消息
+	}
+
+	//  操作性、受信任的错误：向客户端发送消息
+	if (err.isOperational) {
+		return res.status(err.statusCode).render('error', {
+			title: 'Something went wrong!',
+			msg: err.message,
 		});
 	}
+
+	// 编程或其他未知错误：不要泄露错误详细信息
+	console.error('ERROR 💥', err);// 1） 日志错误
+	return res.status(err.statusCode).render('error', {
+		title: 'Something went wrong!',
+		msg: 'Please try again later.',
+	}); 	// 2) 发送通用消息
 };
 
 // --------------------------------------------------------
@@ -72,7 +98,7 @@ module.exports = (err, req, res, next) => {
 	err.status = err.status || 'error';
 
 	if (process.env.NODE_ENV === 'development') {
-		SendErrorDev(err, res);
+		SendErrorDev(err, req, res);
 	} else if (process.env.NODE_ENV === 'production') {
 		let error = err; // 不改变原来的错误信息.  (这儿第一次似乎写错了 写成了 {...err},err展开好像并没有name属性)
 		// 如果返回给客户端的信息中有一些没多大意义的字段 我们可以重新设置err对象 再返回给客户端
@@ -82,8 +108,6 @@ module.exports = (err, req, res, next) => {
 		if (error.name === 'JsonWebTokenError') error = handleJWTError();
 		if (err.name === 'TokenExpiredError') error = handleExpiredError();
 
-		console.log(error);
-
-		SendErrorPro(error, res);
+		SendErrorPro(error, req, res);
 	}
 };

@@ -1,4 +1,4 @@
-header.header 
+header.header
   nav.nav.nav--tours
     a.nav__el(href='/') All tours
   .header__logo
@@ -7,10 +7,10 @@ header.header
     //- 如果用户已经登录 那么页面上不要有这两个标签了
     if user
       a.nav__el.nav__el--logout(href='#') LOG OUT
-      a.nav__el(href='#')
+      a.nav__el(href='/me')
         img.nav__user-img(src=`/img/users/${user.photo}` alt=`Photo of ${user.name}`)
         span=user.name.split(' ')[0]
 
     else
       a.nav__el(href="/login") LOG IN
-      button.nav__el.nav__el--cta sign up 
+      button.nav__el.nav__el--cta sign up
