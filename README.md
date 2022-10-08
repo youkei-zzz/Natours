@@ -356,3 +356,27 @@ npm install --save moduleName
 npm install --save-dev moduleName
 ```
 > [npm](https://baijiahao.baidu.com/s?id=1637471064122396966)
+
+## `20. Pug 变量` | 👉 **[文档](https://expressjs.com/en/api.html)**
+
+```javascript
+1) app.locals
+```
+>`该对象的属性是应用程序中的局部变量，并且可以在使用 res.render.app.locals 呈现的模板中使用
+设置后，属性的值将在应用程序的整个生命周期中持续存在，这与仅在请求的生存期内有效的 res.locals 属性形成对比。app.locals
+您可以在应用程序中呈现的模板中访问局部变量。这对于向模板以及应用程序级数据提供帮助器函数非常有用。局部变量可通过在中间件中使用（请参阅 req.app req.app.locals)`
+
+```javascript
+2).res.locals
+
+app.use(function (req, res, next) {
+  // Make `user` and `authenticated` available in templates
+  res.locals.user = req.user
+  res.locals.authenticated = !req.user.anonymous
+  next()
+})
+```
+>`使用此属性可以设置在使用 res.render 呈现的模板中可访问的变量。设置为 上的变量在单个请求-响应周期内可用，并且不会在请求之间共享。res.locals
+为了保留局部变量以便在请求之间的模板呈现中使用，请改用 app.locals。
+此属性可用于向应用程序中呈现的模板公开请求级信息，如请求路径名、经过身份验证的用户、用户设置等。`
+
