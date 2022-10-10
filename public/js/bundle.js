@@ -78,14 +78,15 @@ var $f6b1c9ed51ec7162$export$2e2bcd8739ae039 = (locations)=>{
 
 
 
-var $a7bd2b0e83ecbd10$export$2e2bcd8739ae039 = (name, email)=>{
+var $a7bd2b0e83ecbd10$export$2e2bcd8739ae039 = (data, type)=>{
     const ajax = new XMLHttpRequest();
-    ajax.open("PATCH", "http://127.0.0.1:3000/api/v1/users/updateMe");
-    ajax.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    ajax.send(`name=${name}&email=${email}`);
+    const url = type === "password" ? "http://127.0.0.1:3000/api/v1/users/updateMyPassword" : "http://127.0.0.1:3000/api/v1/users/updateMe";
+    ajax.open("PATCH", url);
+    ajax.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    ajax.send(JSON.stringify(data));
     ajax.onreadystatechange = function() {
         if (ajax.readyState === 4) {
-            if (ajax.status === 200 && ajax.status < 400) (0, $fc9f18cd978afa5b$export$de026b00723010c1)("success", "updating successfully!");
+            if (ajax.status === 200 && ajax.status < 400) (0, $fc9f18cd978afa5b$export$de026b00723010c1)("success", `${type.toUpperCase()} updating successfully!`);
             else (0, $fc9f18cd978afa5b$export$de026b00723010c1)("error", JSON.parse(ajax.responseText).message);
         }
     };
@@ -97,6 +98,7 @@ const $1cd085a7ac742057$var$mapBox = document.getElementById("map");
 const $1cd085a7ac742057$var$loginForm = document.querySelector(".form--login");
 const $1cd085a7ac742057$var$logoutButton = document.querySelector(".nav__el--logout");
 const $1cd085a7ac742057$var$userDataForm = document.querySelector(".form-user-data");
+const $1cd085a7ac742057$var$userPasswordForm = document.querySelector(".form-user-password");
 if ($1cd085a7ac742057$var$mapBox) {
     const locations = JSON.parse($1cd085a7ac742057$var$mapBox.dataset.locations);
     (0, $f6b1c9ed51ec7162$export$2e2bcd8739ae039)(locations);
@@ -116,7 +118,24 @@ if ($1cd085a7ac742057$var$userDataForm) $1cd085a7ac742057$var$userDataForm.addEv
     e.preventDefault();
     const email = document.getElementById("email").value;
     const name = document.getElementById("name").value;
-    (0, $a7bd2b0e83ecbd10$export$2e2bcd8739ae039)(name, email);
+    (0, $a7bd2b0e83ecbd10$export$2e2bcd8739ae039)({
+        name: name,
+        email: email
+    }, "data");
+});
+if ($1cd085a7ac742057$var$userPasswordForm) $1cd085a7ac742057$var$userPasswordForm.addEventListener("submit", (e)=>{
+    e.preventDefault();
+    const passwordCurrent = document.getElementById("password-current").value;
+    const password = document.getElementById("password").value;
+    const passwordConfirm = document.getElementById("password-confirm").value;
+    (0, $a7bd2b0e83ecbd10$export$2e2bcd8739ae039)({
+        password: password,
+        passwordCurrent: passwordCurrent,
+        passwordConfirm: passwordConfirm
+    }, "password");
+    document.getElementById("password-current").value = "";
+    document.getElementById("password-confirm").value = "";
+    document.getElementById("password").value = "";
 });
 
 

@@ -73,7 +73,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // add timeStamp
 app.use((req, res, next) => {
 	req.requestTime = new Date().toISOString();
-	console.log(req.cookies) // 使用中间件后可以查看cookie
+	// console.log(req.cookies) // 使用中间件后可以查看cookie
 	// console.log(x) // Express 会在发生错误时 自动的进入 错误处理中间件中  所以production 模式下 控制台输出 " The error ' xxxx ' hanppened ⁉️ ....."
 	next();
 });
