@@ -1,12 +1,44 @@
 const User = require('../models/userModel.js');
 const AppError = require('../utils/appError.js');
-// const { catchAsync } = require('../utils/catchAsync.js');
+const multer = require('multer'); // 上传文件
 const factory = require('../controllers/handleFactory.js');
 
 exports.getAllUser = factory.getAllxx(User);
 exports.getUser = factory.getOnexx(User);
 exports.updateUser = factory.updateOnexx(User); // 管理员更新用户 (没有protect中间件 因此不要在这里改密码)
 exports.deleteUser = factory.deleteOnexx(User);
+
+const multerStorage = multer.diskStorage({
+	destination: function (req, file, callback) {
+		callback(null, './public/img/users/');
+	},
+	filename: (req, file, callback) => {
+		// user-userid-timeStamp
+		const ext = file.mimetype.split('/')[1];
+		callback(null, `user-${req.user.id}-${Date.now()}.${ext}`); // 第一个参数是表示错误信息,userid是防止用户先后上传的图片被覆盖，timeStamp是防止多个用户上传的文件名字重复
+	},
+});
+
+const multerFilter = (req, file, callback) => {
+	if (file.mimetype.startsWith('image')) {
+		callback(null, true);
+	} else {
+		callback(new AppError('Not an image. Please upload only images.', 400), false);
+	}
+};
+
+const upload = multer({
+	storage: multerStorage,
+	fileFilter: multerFilter,
+	// dest: './public/img/users',//上传路径
+}); 
+
+exports.uploadUserPhoto = upload.single('photo');
+
+exports.resizeUserPhoto = (req,res, next)=>{
+	if(!req.file) return next();
+}
+
 exports.getMe = (req, res, next) => {
 	req.params.id = req.user.id;
 	next();
@@ -52,3 +84,4 @@ exports.createUser = (req, res) => {
 		message: 'not defined! Please use /signup instead!!!',
 	});
 };
+``
