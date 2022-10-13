@@ -1,13 +1,13 @@
 const User = require('../models/userModel.js');
-const {catchAsync} = require('../utils/catchAsync.js');
+const { catchAsync } = require('../utils/catchAsync.js');
 const jwt = require('jsonwebtoken');
-const {promisify} = require('util');
+const { promisify } = require('util');
 const AppError = require('../utils/appError.js');
-const sendEmail = require('../utils/email.js');
+const Email = require('../utils/email.js');
 const crypto = require('crypto');
 
 const signToken = id => {
-	return jwt.sign({id}, process.env.JWT_SECRET, {
+	return jwt.sign({ id }, process.env.JWT_SECRET, {
 		expiresIn: process.env.JWT_EXPIRES_IN,
 	});
 };
@@ -45,20 +45,22 @@ exports.signup = catchAsync(async (req, res, next) => {
 		passwordChangedAt: req.body.passwordChangedAt,
 		role: req.body.role,
 	});
-
+	const url = `${req.protocol}://${req.get('host')}/me`;
+	console.log(url);
+	await new Email(newUser, url).sendWelcome();
 	createSendToken(newUser, 201, res);
 });
 
 // async返回Promise可能有错误产生，又不想用重复的 try ... catch  就用我们包装的 catchAsync函数const
 exports.login = catchAsync(async (req, res, next) => {
-	const {email, password} = req.body;
+	const { email, password } = req.body;
 	// 1.检查email password 是否存在  (在调用中间件后 使login函数马上结束  否则又会发送两个 Headers 过去 又会报错)
 	if (!email || !password) {
 		return next(new AppError('Please provide email or password!', 400));
 	}
 	// 2.检查用户是否存在 和 密码是否正确 (由于设置了password字段在数据库查询时不选择输出这里可以手动选择输出 用 "+" + 字段名)
 	// 使用await能接收到查询的数据 不然只能看到一堆 query语句配置
-	const user = await User.findOne({email}).select('+password');
+	const user = await User.findOne({ email }).select('+password');
 	// 由于correctPassword是异步函数因此也要等待结果返回 (这个函数是userModel.js中通过 Schema.methods方法挂载到实例对象 身上 的)
 	const correct = await user.correctPassword(password, user.password);
 	if (!user || !correct) {
@@ -73,7 +75,7 @@ exports.logout = async (req, res, next) => {
 	res.cookie('jwt', 'logout', {
 		// 为了不要使得 报错 jwt malformed ，因为我们传的 token是 空 这里触发 renderloggedin 中间件 在jwt.verify 会触发错误 进入catchAsync 于是报错  可以删掉 renderedLoggedin 的 catchAsync 用try catch包裹 catch error的时候 直接 returnnext()就不会报错 。
 		// expires: new Date( new Date().getTime() + 100),  // 似乎把时间设置成 0.1s 之后也不会报错了....   也可以用 maxAge: 100,
-		maxAge: 100,  // maxAge 属性是一个便利的设置"expires",它是一个从当前时间算起的毫秒。
+		maxAge: 100, // maxAge 属性是一个便利的设置"expires",它是一个从当前时间算起的毫秒。
 		httpOnly: true,
 	});
 	res.status(200).json({
@@ -114,7 +116,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
 	// 验证通过 授予访问GetAllTour的权限
 	req.user = currentUser; // 便于后面的中间件访问查询角色权限等的各种数据，非常有意义
-	res.locals.user = currentUser
+	res.locals.user = currentUser;
 	next();
 });
 
@@ -152,7 +154,7 @@ exports.restrictTo = (...roles) => {
 
 exports.forgotPassword = catchAsync(async (req, res, next) => {
 	// 1.通过邮件中的邮箱中获取用户
-	const user = await User.findOne({email: req.body.email});
+	const user = await User.findOne({ email: req.body.email });
 	if (!user) {
 		return next(new AppError('There is no user with email address', 404));
 	}
@@ -160,19 +162,17 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 	// 2.生成随机的重置token 保存到文档上 并返回这个token过来
 	const resetToken = user.createPasswordResetToken();
 	// 上一步执行完了以后往往所有文档里增添了一个字段 但是还未保存 这里就执行一下保存使文档数据更新 ，但是不需要在执行 save的时候验证字段(目的只是为了保存)
-	await user.save({validateBeforeSave: false});
+	await user.save({ validateBeforeSave: false });
 	// await user.save();
 
 	// 3. 发送生成的token给用户
-	const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${resetToken}`;
-	const message = `Forgot Password? Just submit a patch request with yourr password and passConfirm to: ${resetURL}.\nIf you did't forgot please ignore this email!`;
 
 	try {
-		await sendEmail({
-			email: user.email,
-			subject: 'Your password reset token (valid for 10 minutes!)',
-			message,
-		});
+		const resetURL = `${req.protocol}://${req.get(
+			'host'
+		)}/api/v1/users/resetPassword/${resetToken}`;
+		await new Email(user, resetURL).sendPasswordReset();
+
 		res.status(200).json({
 			status: 'success',
 			message: 'Token send to email!',
@@ -181,7 +181,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 		//发送邮件出错了，那么保存这两个属性也没必要，本来这两个属性就是用来重置密码时验证用的，因此把查询的文档中的两个字段重置为undefined不让这两个字段显示 并执行保存
 		user.passwordResetToken = undefined;
 		user.passwordExpires = undefined;
-		await user.save({validateBeforeSave: false});
+		await user.save({ validateBeforeSave: false });
 
 		return next(new AppError('Errors hanppen while sending email, Try again later!', 500));
 	}
@@ -199,7 +199,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 		// token一样
 		passwordResetToken: hashedToken,
 		// token一样还不够 还要保证过期的时间是在将来
-		passwordResetExpires: {$gt: Date.now()},
+		passwordResetExpires: { $gt: Date.now() },
 	});
 
 	// 查不到
@@ -247,7 +247,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
-	await User.findByIdAndUpdate(req.user.id, {active: false});
+	await User.findByIdAndUpdate(req.user.id, { active: false });
 
 	res.status(204).json({
 		status: 'success',

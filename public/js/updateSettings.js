@@ -1,5 +1,4 @@
 import { showAlert } from './alert.js';
-
 export default (data, type) => {
 	const ajax = new XMLHttpRequest();
 	const url =

@@ -1,25 +1,65 @@
+/* eslint-disable no-empty */
 const nodemailer = require('nodemailer');
+const pug = require('pug');
+const htmlToText = require('html-to-text');
 
-const sendEmail = async options => {
-	// 1.创建传输器
-	const transporter = nodemailer.createTransport({
-		host: process.env.EMAIL_HOST,
-		port: process.env.EMAIL_PORT,
-		auth: {
-			user: process.env.EMAIL_USERNAME,
-			pass: process.env.EMAIL_PASSWORD,
-		},
-	});
+module.exports = class Email {
+	constructor(user, url) {
+		this.to = user.email;
+		this.firstName = user.name.split(' ')[0];
+		this.url = url;
+		this.from = `Natours Website <${process.env.EMAIL_FROM}>`;
+	}
 
-	// 2.定义邮件的 options
-	const mailOptions = {
-		from: "Natour website mail <user@gmail.com>",
-		to: options.email,
-		subject: options.subject,
-		text: options.message,
-	};
-	// 3.发送邮件 (异步函数 如果不想用 Promise就用await)
-	await transporter.sendMail(mailOptions);
+	newTransport() {
+		if (process.env.NODE_ENV === 'production') {
+			// Sendgrid
+			return nodemailer.createTransport({
+				service: 'SendGrid',
+				auth: {
+					user: process.env.SENDGRID_USERNAME,
+					pass: process.env.SENDGRID_PASSWORD,
+				},
+			});
+		}
+
+		return nodemailer.createTransport({
+			host: process.env.EMAIL_HOST,
+			port: process.env.EMAIL_PORT,
+			auth: {
+				user: process.env.EMAIL_USERNAME,
+				pass: process.env.EMAIL_PASSWORD,
+			},
+		});
+	}
+
+	// 发送实际电子邮件
+	async send(template, subject) {
+		// 1)基于哈巴狗模板渲染 HTML
+		const html = pug.renderFile(`${__dirname}/../views/email/${template}.pug`, {
+			firstName: this.firstName,
+			url: this.url,
+			subject,
+		});
+
+		// 2) 定义电子邮件选项
+		const mailOptions = {
+			from: this.from,
+			to: this.to,
+			subject,
+			html,
+			text: htmlToText.htmlToText(html),
+		};
+
+		// 3)创建传输并发送电子邮件
+		await this.newTransport().sendMail(mailOptions);
+	}
+
+	async sendWelcome() {
+		await this.send('welcome', 'Welcome to the Natours Family!');
+	}
+
+	async sendPasswordReset() {
+		await this.send('passwordReset', 'Your password reset token (valid for only 10 minutes)');
+	}
 };
-
-module.exports = sendEmail;
