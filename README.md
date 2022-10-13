@@ -381,7 +381,7 @@ app.use(function (req, res, next) {
 
 > `使用此属性可以设置在使用 res.render 呈现的模板中可访问的变量。设置为 上的变量在单个请求-响应周期内可用，并且不会在请求之间共享。res.locals 为了保留局部变量以便在请求之间的模板呈现中使用，请改用 app.locals。 此属性可用于向应用程序中呈现的模板公开请求级信息，如请求路径名、经过身份验证的用户、用户设置等。`
 
-### 'XMLHttpRequest setHeaders 参数'
+### `21. XMLHttpRequest setHeaders 参数`
 
 ```javascript
 // 设置响应头
@@ -398,3 +398,6 @@ ajax.onreadystatechange = function (){
 	}
 }
 ```
+### `22. Sharp 高性能裁剪图片`
+
+### `23. XMLHttpRequest发送表单 `|✨ 👉 [示例](https://www.cnblogs.com/cnlisiyiii-stu/p/11572020.html) 
